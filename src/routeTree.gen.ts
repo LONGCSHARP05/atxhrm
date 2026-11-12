@@ -14,6 +14,7 @@ import { Route as BangLuongRouteImport } from './routes/bang-luong'
 import { Route as BaoCaoRouteImport } from './routes/bao-cao'
 import { Route as CauHinhRouteImport } from './routes/cau-hinh'
 import { Route as DangNhapRouteImport } from './routes/dang-nhap'
+import { Route as HoSoRouteImport } from './routes/ho-so'
 import { Route as KpiRouteImport } from './routes/kpi'
 import { Route as NhatKyRouteImport } from './routes/nhat-ky'
 import { Route as PhanQuyenRouteImport } from './routes/phan-quyen'
@@ -44,6 +45,11 @@ const DangNhapRoute = DangNhapRouteImport.update({
   path: '/dang-nhap',
   getParentRoute: () => rootRouteImport,
 } as any)
+const HoSoRoute = HoSoRouteImport.update({
+  id: '/ho-so',
+  path: '/ho-so',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const KpiRoute = KpiRouteImport.update({
   id: '/kpi',
   path: '/kpi',
@@ -71,6 +77,7 @@ export interface FileRoutesByFullPath {
   '/bao-cao': typeof BaoCaoRoute
   '/cau-hinh': typeof CauHinhRoute
   '/dang-nhap': typeof DangNhapRoute
+  '/ho-so': typeof HoSoRoute
   '/kpi': typeof KpiRoute
   '/nhat-ky': typeof NhatKyRoute
   '/phan-quyen': typeof PhanQuyenRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/bao-cao': typeof BaoCaoRoute
   '/cau-hinh': typeof CauHinhRoute
   '/dang-nhap': typeof DangNhapRoute
+  '/ho-so': typeof HoSoRoute
   '/kpi': typeof KpiRoute
   '/nhat-ky': typeof NhatKyRoute
   '/phan-quyen': typeof PhanQuyenRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/bao-cao': typeof BaoCaoRoute
   '/cau-hinh': typeof CauHinhRoute
   '/dang-nhap': typeof DangNhapRoute
+  '/ho-so': typeof HoSoRoute
   '/kpi': typeof KpiRoute
   '/nhat-ky': typeof NhatKyRoute
   '/phan-quyen': typeof PhanQuyenRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/bao-cao'
     | '/cau-hinh'
     | '/dang-nhap'
+    | '/ho-so'
     | '/kpi'
     | '/nhat-ky'
     | '/phan-quyen'
@@ -118,6 +128,7 @@ export interface FileRouteTypes {
     | '/bao-cao'
     | '/cau-hinh'
     | '/dang-nhap'
+    | '/ho-so'
     | '/kpi'
     | '/nhat-ky'
     | '/phan-quyen'
@@ -129,6 +140,7 @@ export interface FileRouteTypes {
     | '/bao-cao'
     | '/cau-hinh'
     | '/dang-nhap'
+    | '/ho-so'
     | '/kpi'
     | '/nhat-ky'
     | '/phan-quyen'
@@ -141,6 +153,7 @@ export interface RootRouteChildren {
   BaoCaoRoute: typeof BaoCaoRoute
   CauHinhRoute: typeof CauHinhRoute
   DangNhapRoute: typeof DangNhapRoute
+  HoSoRoute: typeof HoSoRoute
   KpiRoute: typeof KpiRoute
   NhatKyRoute: typeof NhatKyRoute
   PhanQuyenRoute: typeof PhanQuyenRoute
@@ -184,6 +197,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof DangNhapRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ho-so': {
+      id: '/ho-so'
+      path: '/ho-so'
+      fullPath: '/ho-so'
+      preLoaderRoute: typeof HoSoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/kpi': {
       id: '/kpi'
       path: '/kpi'
@@ -221,6 +241,7 @@ const rootRouteChildren: RootRouteChildren = {
   BaoCaoRoute: BaoCaoRoute,
   CauHinhRoute: CauHinhRoute,
   DangNhapRoute: DangNhapRoute,
+  HoSoRoute: HoSoRoute,
   KpiRoute: KpiRoute,
   NhatKyRoute: NhatKyRoute,
   PhanQuyenRoute: PhanQuyenRoute,
