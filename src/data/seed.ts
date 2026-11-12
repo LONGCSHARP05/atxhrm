@@ -1,7 +1,7 @@
 import { PHONG_BAN } from "./phongBan";
 import type { AppState, CaId, ChamCong, DonTu, HopDong, NhanVien, NhatKy, Role, ThongBao } from "./types";
 import { CA, caById } from "./types";
-import { addDays, addMonths, daysBetween, isWeekend, now, pad, TODAY, workdays } from "@/lib/date";
+import { addDays, addMonths, daysBetween, dow, isWeekend, now, pad, TODAY, workdays } from "@/lib/date";
 
 function rng(seed: number) {
   return () => {
@@ -159,11 +159,11 @@ export function buildSeed(): AppState {
 
   const active = nhanVien.filter((n) => n.trangThai === "Chính thức" && !n.laTruongPhong);
   const who = (maPB: string, chucVu: string, nth = 0) => {
-    const list = active.filter((n) => n.maPB === maPB && n.chucVu === chucVu && taiKhoan[n.maNV] === "nv");
+    const list = active.filter((n) => n.maPB === maPB && n.chucVu === chucVu && taiKhoan[n.maNV] === "nv" && n.maNV !== demo("nv"));
     return list[nth % list.length].maNV;
   };
-  const demo = (role: Role) => Object.keys(taiKhoan).find((k) => taiKhoan[k] === role && nhanVien.find((n) => n.maNV === k)!.chucVu !== "Phó Tổng Giám đốc" && nhanVien.find((n) => n.maNV === k)!.chucVu !== "Giám đốc Tài chính (CFO)" && (role !== "tp" || nhanVien.find((n) => n.maNV === k)!.maPB === "CNSP"))!;
-  const demoNV = who("CNSP", "Frontend Developer", 0) && nhanVien.find((n) => ROSTER.length && n.chucVu === "Frontend Developer" && taiKhoan[n.maNV] === "nv" && drafts[nhanVien.indexOf(n)].flag.demo === "nv")!.maNV;
+  const demo = (role: Role) => nhanVien[drafts.findIndex((d) => d.flag.demo === role)].maNV;
+  const demoNV = demo("nv");
   const tpOf = (maPB: string) => nhanVien.find((n) => n.maPB === maPB && n.laTruongPhong)!.maNV;
   const hrDemo = demo("hr");
 
@@ -217,7 +217,7 @@ export function buildSeed(): AppState {
       const oct = from.startsWith("2026-10");
       const days = daysBetween(from, to).filter((d) => d >= nv.ngayVaoLam && (!nv.ngayNghiViec || d <= nv.ngayNghiViec));
       if (!days.length) continue;
-      const sats = days.filter((d) => new Date(d).getDay() === 6 || isWeekend(d) && new Date(d + "T00:00").getDay() === 6);
+      const sats = days.filter((d) => dow(d) === 6);
       const extraSat = oct && days.length > 25 ? ri(0, 4) : 0;
       const workDays = [...days.filter((d) => !isWeekend(d)), ...sats.slice(0, extraSat)].sort();
       const recs: ChamCong[] = [];
