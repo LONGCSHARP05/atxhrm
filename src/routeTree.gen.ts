@@ -13,9 +13,12 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as BangLuongRouteImport } from './routes/bang-luong'
 import { Route as BaoCaoRouteImport } from './routes/bao-cao'
 import { Route as CauHinhRouteImport } from './routes/cau-hinh'
+import { Route as ChamCongRouteImport } from './routes/cham-cong'
 import { Route as DangNhapRouteImport } from './routes/dang-nhap'
+import { Route as DonTuRouteImport } from './routes/don-tu'
 import { Route as HoSoRouteImport } from './routes/ho-so'
 import { Route as KpiRouteImport } from './routes/kpi'
+import { Route as LichLamViecRouteImport } from './routes/lich-lam-viec'
 import { Route as NhatKyRouteImport } from './routes/nhat-ky'
 import { Route as PhanQuyenRouteImport } from './routes/phan-quyen'
 import { Route as PhieuLuongRouteImport } from './routes/phieu-luong'
@@ -40,9 +43,19 @@ const CauHinhRoute = CauHinhRouteImport.update({
   path: '/cau-hinh',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ChamCongRoute = ChamCongRouteImport.update({
+  id: '/cham-cong',
+  path: '/cham-cong',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DangNhapRoute = DangNhapRouteImport.update({
   id: '/dang-nhap',
   path: '/dang-nhap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DonTuRoute = DonTuRouteImport.update({
+  id: '/don-tu',
+  path: '/don-tu',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HoSoRoute = HoSoRouteImport.update({
@@ -53,6 +66,11 @@ const HoSoRoute = HoSoRouteImport.update({
 const KpiRoute = KpiRouteImport.update({
   id: '/kpi',
   path: '/kpi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LichLamViecRoute = LichLamViecRouteImport.update({
+  id: '/lich-lam-viec',
+  path: '/lich-lam-viec',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NhatKyRoute = NhatKyRouteImport.update({
@@ -76,9 +94,12 @@ export interface FileRoutesByFullPath {
   '/bang-luong': typeof BangLuongRoute
   '/bao-cao': typeof BaoCaoRoute
   '/cau-hinh': typeof CauHinhRoute
+  '/cham-cong': typeof ChamCongRoute
   '/dang-nhap': typeof DangNhapRoute
+  '/don-tu': typeof DonTuRoute
   '/ho-so': typeof HoSoRoute
   '/kpi': typeof KpiRoute
+  '/lich-lam-viec': typeof LichLamViecRoute
   '/nhat-ky': typeof NhatKyRoute
   '/phan-quyen': typeof PhanQuyenRoute
   '/phieu-luong': typeof PhieuLuongRoute
@@ -88,9 +109,12 @@ export interface FileRoutesByTo {
   '/bang-luong': typeof BangLuongRoute
   '/bao-cao': typeof BaoCaoRoute
   '/cau-hinh': typeof CauHinhRoute
+  '/cham-cong': typeof ChamCongRoute
   '/dang-nhap': typeof DangNhapRoute
+  '/don-tu': typeof DonTuRoute
   '/ho-so': typeof HoSoRoute
   '/kpi': typeof KpiRoute
+  '/lich-lam-viec': typeof LichLamViecRoute
   '/nhat-ky': typeof NhatKyRoute
   '/phan-quyen': typeof PhanQuyenRoute
   '/phieu-luong': typeof PhieuLuongRoute
@@ -101,9 +125,12 @@ export interface FileRoutesById {
   '/bang-luong': typeof BangLuongRoute
   '/bao-cao': typeof BaoCaoRoute
   '/cau-hinh': typeof CauHinhRoute
+  '/cham-cong': typeof ChamCongRoute
   '/dang-nhap': typeof DangNhapRoute
+  '/don-tu': typeof DonTuRoute
   '/ho-so': typeof HoSoRoute
   '/kpi': typeof KpiRoute
+  '/lich-lam-viec': typeof LichLamViecRoute
   '/nhat-ky': typeof NhatKyRoute
   '/phan-quyen': typeof PhanQuyenRoute
   '/phieu-luong': typeof PhieuLuongRoute
@@ -115,9 +142,12 @@ export interface FileRouteTypes {
     | '/bang-luong'
     | '/bao-cao'
     | '/cau-hinh'
+    | '/cham-cong'
     | '/dang-nhap'
+    | '/don-tu'
     | '/ho-so'
     | '/kpi'
+    | '/lich-lam-viec'
     | '/nhat-ky'
     | '/phan-quyen'
     | '/phieu-luong'
@@ -127,9 +157,12 @@ export interface FileRouteTypes {
     | '/bang-luong'
     | '/bao-cao'
     | '/cau-hinh'
+    | '/cham-cong'
     | '/dang-nhap'
+    | '/don-tu'
     | '/ho-so'
     | '/kpi'
+    | '/lich-lam-viec'
     | '/nhat-ky'
     | '/phan-quyen'
     | '/phieu-luong'
@@ -139,9 +172,12 @@ export interface FileRouteTypes {
     | '/bang-luong'
     | '/bao-cao'
     | '/cau-hinh'
+    | '/cham-cong'
     | '/dang-nhap'
+    | '/don-tu'
     | '/ho-so'
     | '/kpi'
+    | '/lich-lam-viec'
     | '/nhat-ky'
     | '/phan-quyen'
     | '/phieu-luong'
@@ -152,9 +188,12 @@ export interface RootRouteChildren {
   BangLuongRoute: typeof BangLuongRoute
   BaoCaoRoute: typeof BaoCaoRoute
   CauHinhRoute: typeof CauHinhRoute
+  ChamCongRoute: typeof ChamCongRoute
   DangNhapRoute: typeof DangNhapRoute
+  DonTuRoute: typeof DonTuRoute
   HoSoRoute: typeof HoSoRoute
   KpiRoute: typeof KpiRoute
+  LichLamViecRoute: typeof LichLamViecRoute
   NhatKyRoute: typeof NhatKyRoute
   PhanQuyenRoute: typeof PhanQuyenRoute
   PhieuLuongRoute: typeof PhieuLuongRoute
@@ -190,11 +229,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof CauHinhRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/cham-cong': {
+      id: '/cham-cong'
+      path: '/cham-cong'
+      fullPath: '/cham-cong'
+      preLoaderRoute: typeof ChamCongRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dang-nhap': {
       id: '/dang-nhap'
       path: '/dang-nhap'
       fullPath: '/dang-nhap'
       preLoaderRoute: typeof DangNhapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/don-tu': {
+      id: '/don-tu'
+      path: '/don-tu'
+      fullPath: '/don-tu'
+      preLoaderRoute: typeof DonTuRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/ho-so': {
@@ -209,6 +262,13 @@ declare module '@tanstack/react-router' {
       path: '/kpi'
       fullPath: '/kpi'
       preLoaderRoute: typeof KpiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/lich-lam-viec': {
+      id: '/lich-lam-viec'
+      path: '/lich-lam-viec'
+      fullPath: '/lich-lam-viec'
+      preLoaderRoute: typeof LichLamViecRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/nhat-ky': {
@@ -240,9 +300,12 @@ const rootRouteChildren: RootRouteChildren = {
   BangLuongRoute: BangLuongRoute,
   BaoCaoRoute: BaoCaoRoute,
   CauHinhRoute: CauHinhRoute,
+  ChamCongRoute: ChamCongRoute,
   DangNhapRoute: DangNhapRoute,
+  DonTuRoute: DonTuRoute,
   HoSoRoute: HoSoRoute,
   KpiRoute: KpiRoute,
+  LichLamViecRoute: LichLamViecRoute,
   NhatKyRoute: NhatKyRoute,
   PhanQuyenRoute: PhanQuyenRoute,
   PhieuLuongRoute: PhieuLuongRoute,
