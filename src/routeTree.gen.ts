@@ -10,33 +10,154 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BangLuongRouteImport } from './routes/bang-luong'
+import { Route as BaoCaoRouteImport } from './routes/bao-cao'
+import { Route as CauHinhRouteImport } from './routes/cau-hinh'
+import { Route as DangNhapRouteImport } from './routes/dang-nhap'
+import { Route as HoSoRouteImport } from './routes/ho-so'
+import { Route as KpiRouteImport } from './routes/kpi'
+import { Route as NhatKyRouteImport } from './routes/nhat-ky'
+import { Route as PhanQuyenRouteImport } from './routes/phan-quyen'
+import { Route as PhieuLuongRouteImport } from './routes/phieu-luong'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BangLuongRoute = BangLuongRouteImport.update({
+  id: '/bang-luong',
+  path: '/bang-luong',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BaoCaoRoute = BaoCaoRouteImport.update({
+  id: '/bao-cao',
+  path: '/bao-cao',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CauHinhRoute = CauHinhRouteImport.update({
+  id: '/cau-hinh',
+  path: '/cau-hinh',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DangNhapRoute = DangNhapRouteImport.update({
+  id: '/dang-nhap',
+  path: '/dang-nhap',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HoSoRoute = HoSoRouteImport.update({
+  id: '/ho-so',
+  path: '/ho-so',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const KpiRoute = KpiRouteImport.update({
+  id: '/kpi',
+  path: '/kpi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NhatKyRoute = NhatKyRouteImport.update({
+  id: '/nhat-ky',
+  path: '/nhat-ky',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhanQuyenRoute = PhanQuyenRouteImport.update({
+  id: '/phan-quyen',
+  path: '/phan-quyen',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhieuLuongRoute = PhieuLuongRouteImport.update({
+  id: '/phieu-luong',
+  path: '/phieu-luong',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/bang-luong': typeof BangLuongRoute
+  '/bao-cao': typeof BaoCaoRoute
+  '/cau-hinh': typeof CauHinhRoute
+  '/dang-nhap': typeof DangNhapRoute
+  '/ho-so': typeof HoSoRoute
+  '/kpi': typeof KpiRoute
+  '/nhat-ky': typeof NhatKyRoute
+  '/phan-quyen': typeof PhanQuyenRoute
+  '/phieu-luong': typeof PhieuLuongRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/bang-luong': typeof BangLuongRoute
+  '/bao-cao': typeof BaoCaoRoute
+  '/cau-hinh': typeof CauHinhRoute
+  '/dang-nhap': typeof DangNhapRoute
+  '/ho-so': typeof HoSoRoute
+  '/kpi': typeof KpiRoute
+  '/nhat-ky': typeof NhatKyRoute
+  '/phan-quyen': typeof PhanQuyenRoute
+  '/phieu-luong': typeof PhieuLuongRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/bang-luong': typeof BangLuongRoute
+  '/bao-cao': typeof BaoCaoRoute
+  '/cau-hinh': typeof CauHinhRoute
+  '/dang-nhap': typeof DangNhapRoute
+  '/ho-so': typeof HoSoRoute
+  '/kpi': typeof KpiRoute
+  '/nhat-ky': typeof NhatKyRoute
+  '/phan-quyen': typeof PhanQuyenRoute
+  '/phieu-luong': typeof PhieuLuongRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/bang-luong'
+    | '/bao-cao'
+    | '/cau-hinh'
+    | '/dang-nhap'
+    | '/ho-so'
+    | '/kpi'
+    | '/nhat-ky'
+    | '/phan-quyen'
+    | '/phieu-luong'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/bang-luong'
+    | '/bao-cao'
+    | '/cau-hinh'
+    | '/dang-nhap'
+    | '/ho-so'
+    | '/kpi'
+    | '/nhat-ky'
+    | '/phan-quyen'
+    | '/phieu-luong'
+  id:
+    | '__root__'
+    | '/'
+    | '/bang-luong'
+    | '/bao-cao'
+    | '/cau-hinh'
+    | '/dang-nhap'
+    | '/ho-so'
+    | '/kpi'
+    | '/nhat-ky'
+    | '/phan-quyen'
+    | '/phieu-luong'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  BangLuongRoute: typeof BangLuongRoute
+  BaoCaoRoute: typeof BaoCaoRoute
+  CauHinhRoute: typeof CauHinhRoute
+  DangNhapRoute: typeof DangNhapRoute
+  HoSoRoute: typeof HoSoRoute
+  KpiRoute: typeof KpiRoute
+  NhatKyRoute: typeof NhatKyRoute
+  PhanQuyenRoute: typeof PhanQuyenRoute
+  PhieuLuongRoute: typeof PhieuLuongRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +169,83 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/bang-luong': {
+      id: '/bang-luong'
+      path: '/bang-luong'
+      fullPath: '/bang-luong'
+      preLoaderRoute: typeof BangLuongRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/bao-cao': {
+      id: '/bao-cao'
+      path: '/bao-cao'
+      fullPath: '/bao-cao'
+      preLoaderRoute: typeof BaoCaoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/cau-hinh': {
+      id: '/cau-hinh'
+      path: '/cau-hinh'
+      fullPath: '/cau-hinh'
+      preLoaderRoute: typeof CauHinhRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dang-nhap': {
+      id: '/dang-nhap'
+      path: '/dang-nhap'
+      fullPath: '/dang-nhap'
+      preLoaderRoute: typeof DangNhapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/ho-so': {
+      id: '/ho-so'
+      path: '/ho-so'
+      fullPath: '/ho-so'
+      preLoaderRoute: typeof HoSoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/kpi': {
+      id: '/kpi'
+      path: '/kpi'
+      fullPath: '/kpi'
+      preLoaderRoute: typeof KpiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/nhat-ky': {
+      id: '/nhat-ky'
+      path: '/nhat-ky'
+      fullPath: '/nhat-ky'
+      preLoaderRoute: typeof NhatKyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/phan-quyen': {
+      id: '/phan-quyen'
+      path: '/phan-quyen'
+      fullPath: '/phan-quyen'
+      preLoaderRoute: typeof PhanQuyenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/phieu-luong': {
+      id: '/phieu-luong'
+      path: '/phieu-luong'
+      fullPath: '/phieu-luong'
+      preLoaderRoute: typeof PhieuLuongRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  BangLuongRoute: BangLuongRoute,
+  BaoCaoRoute: BaoCaoRoute,
+  CauHinhRoute: CauHinhRoute,
+  DangNhapRoute: DangNhapRoute,
+  HoSoRoute: HoSoRoute,
+  KpiRoute: KpiRoute,
+  NhatKyRoute: NhatKyRoute,
+  PhanQuyenRoute: PhanQuyenRoute,
+  PhieuLuongRoute: PhieuLuongRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
