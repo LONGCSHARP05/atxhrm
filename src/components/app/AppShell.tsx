@@ -1,11 +1,13 @@
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
-import { Bell, ChevronDown, LogOut, RotateCcw, Search, ShieldAlert } from "lucide-react";
+import { Bell, ChevronDown, LogOut, Search, ShieldAlert } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ROLE_LABEL } from "@/data/types";
+import { tenPB } from "@/data/phongBan";
+import { normalize, visibleEmployees } from "@/lib/hrm";
 import { timeAgo } from "@/lib/date";
 import { canSee, NAV, type NavLeaf } from "@/lib/nav";
 import { useStore } from "@/lib/store";
@@ -20,7 +22,7 @@ function Sidebar() {
     cn("flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors", active ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground");
   const visible = (l: NavLeaf) => l.roles.includes(role);
   return (
-    <aside className="sticky top-0 flex h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
+    <aside className="hidden md:flex sticky top-0 flex h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand text-lg font-black text-primary-foreground">A</div>
         <div>
@@ -32,7 +34,8 @@ function Sidebar() {
         {NAV.map((item) => {
           if (!("children" in item)) {
             if (!visible(item)) return null;
-            const Icon = item.icon!;
+            const Icon = item.icon;
+            if(!Icon) return null;
             return (
               <Link key={item.to} to={item.to} className={leafCls(path === item.to)}>
                 <Icon className="h-4 w-4" />{item.title}
@@ -73,6 +76,7 @@ function Sidebar() {
 
 function Notifications() {
   const { state, me, docTB, docTatCa } = useStore();
+  const navigate = useNavigate();
   const list = state.thongBao.filter((t) => t.maNV === me?.maNV).sort((a, b) => b.thoiGian.localeCompare(a.thoiGian));
   const unread = list.filter((t) => !t.daDoc).length;
   return (
@@ -83,7 +87,7 @@ function Notifications() {
           {unread > 0 && <span className="absolute -right-0.5 -top-0.5 h-2.5 w-2.5 rounded-full bg-destructive ring-2 ring-card" />}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="end" className="w-96 p-0">
+      <PopoverContent align="end" className="w-96 max-w-[calc(100vw-2rem)] p-0">
         <div className="flex items-center justify-between border-b px-4 py-3">
           <span className="font-semibold">Thông báo {unread > 0 && <span className="text-xs text-muted-foreground">({unread} chưa đọc)</span>}</span>
           <button onClick={docTatCa} className="text-xs font-medium text-primary hover:underline">Đánh dấu đã đọc tất cả</button>
@@ -91,7 +95,7 @@ function Notifications() {
         <div className="max-h-96 overflow-y-auto">
           {list.length === 0 && <p className="p-6 text-center text-sm text-muted-foreground">Không có thông báo</p>}
           {list.map((t) => (
-            <button key={t.id} onClick={() => docTB(t.id)} className={cn("flex w-full gap-3 border-b px-4 py-3 text-left last:border-0 hover:bg-muted", !t.daDoc && "bg-secondary/60")}>
+            <button key={t.id} onClick={() => { docTB(t.id); if(t.donId) navigate({to:"/don-tu",search:{mo:t.donId}}); else if(t.trang==="cham-cong") navigate({to:"/cham-cong"}); else if(t.trang==="phieu-luong") navigate({to:"/phieu-luong"}); else if(t.trang==="kpi") navigate({to:"/kpi"}); else if(t.trang==="ho-so") navigate({to:"/ho-so"}); }} className={cn("flex w-full gap-3 border-b px-4 py-3 text-left last:border-0 hover:bg-muted", !t.daDoc && "bg-secondary/60")}>
               <span className={cn("mt-1.5 h-2 w-2 shrink-0 rounded-full", t.daDoc ? "bg-transparent" : "bg-primary")} />
               <span>
                 <span className="block text-sm text-foreground">{t.noiDung}</span>
@@ -106,8 +110,9 @@ function Notifications() {
 }
 
 function Topbar() {
-  const { logout, reset, setSearch, role } = useStore();
+  const { logout, setSearch, role, state, me } = useStore();
   const [q, setQ] = useState("");
+  const results = me ? visibleEmployees(state,me,role).filter(n=>normalize(`${n.maNV} ${n.hoTen} ${tenPB(n.maPB)}`).includes(normalize(q))).slice(0,8) : [];
   const navigate = useNavigate();
   return (
     <header className="sticky top-0 z-20 flex items-center gap-3 border-b bg-card/90 px-6 py-3 backdrop-blur">
@@ -122,11 +127,9 @@ function Topbar() {
       >
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Tìm nhân viên, phòng ban, mã NV…" className="h-10 bg-background pl-9" />
+        {q.trim().length>=2 && <div className="absolute left-0 right-0 top-full z-40 mt-2 rounded-lg border bg-popover shadow-card">{results.length?results.map(n=><Button variant="ghost" key={n.maNV} className="h-auto w-full justify-start whitespace-normal rounded-none p-3 text-left" onClick={()=>{setSearch(n.maNV);setQ("");navigate({to:"/ho-so",search:{nv:n.maNV}});}}><Initials name={n.hoTen}/><span>{n.hoTen}<span className="block text-xs text-muted-foreground">{n.maNV} · {tenPB(n.maPB)}</span></span></Button>):<p className="p-4 text-sm text-muted-foreground">Không tìm thấy</p>}</div>}
       </form>
       <div className="ml-auto flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={() => { reset(); toast.success("Đã đặt lại dữ liệu demo"); }}>
-          <RotateCcw className="h-4 w-4" />Đặt lại dữ liệu demo
-        </Button>
         <Notifications />
         <Button variant="outline" onClick={() => { logout(); navigate({ to: "/dang-nhap" }); }}>
           <LogOut className="h-4 w-4" />Đăng xuất
@@ -151,7 +154,8 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
-        <main className="flex-1 p-6 lg:p-8">
+        <nav className="flex gap-2 overflow-x-auto border-b bg-card p-2 md:hidden">{NAV.flatMap(i=>"children" in i?i.children:[i]).filter(i=>i.roles.includes(role)).map(i=><Button key={i.to} asChild variant={path===i.to?"default":"ghost"} size="sm"><Link to={i.to}>{i.title}</Link></Button>)}</nav>
+        <main className="flex-1 p-3 sm:p-6 lg:p-8">
           {canSee(path, role) ? children : (
             <div className="card-surface mx-auto mt-10 flex max-w-md flex-col items-center gap-3 p-10 text-center">
               <ShieldAlert className="h-10 w-10 text-destructive" />

@@ -7,6 +7,8 @@ import { PHONG_BAN, tenPB } from "@/data/phongBan";
 import { fmtDate, monthOf, timeAgo, TODAY } from "@/lib/date";
 import { seo } from "@/lib/nav";
 import { dangLam, hdSapHetHan, nghiHomNay, phepConLai, tongHop } from "@/lib/rules";
+import { useConfig } from "@/data/config";
+import { attendanceMonth } from "@/lib/hrm";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/")({
@@ -86,16 +88,17 @@ function Overview() {
 
 function Personal() {
   const { state, me } = useStore();
+  const { config } = useConfig();
   if (!me) return null;
   const month = monthOf(TODAY);
-  const sum = tongHop(state.chamCong.filter((c) => c.maNV === me.maNV && monthOf(c.ngay) === month));
+  const sum = attendanceMonth(state,me.maNV,month,config);
   const dons = state.donTu.filter((d) => d.maNV === me.maNV).slice(0, 5);
   return (
     <>
       <PageHeader title={`Xin chào, ${me.hoTen}`} desc={`${me.chucVu} · ${tenPB(me.maPB)} · Hôm nay ${fmtDate(TODAY)}`}
         actions={<Button asChild><Link to="/cham-cong">Chấm công</Link></Button>} />
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Phép năm còn lại" value={`${12 - (state.phepDaDung[me.maNV] ?? 0)} ngày`} icon={<CalendarOff className="h-5 w-5" />} hint={`Khả dụng để đăng ký: ${phepConLai(state, me.maNV)} ngày`} />
+        <StatCard label="Phép năm còn lại" value={`${config.phepNam - (state.phepDaDung[me.maNV] ?? 0)} ngày`} icon={<CalendarOff className="h-5 w-5" />} hint={`Khả dụng để đăng ký: ${phepConLai(state, me.maNV, undefined, config)} ngày`} />
         <StatCard label="Công tháng 11/2026" value={sum.cong} tone="accent" icon={<CalendarClock className="h-5 w-5" />} hint={`Đi muộn ${sum.diMuon} lần · OT ${sum.ot} giờ`} />
         <StatCard label="Đơn chờ duyệt" value={dons.filter((d) => d.trangThai === "Chờ duyệt").length} tone="warning" icon={<ClipboardList className="h-5 w-5" />} />
         <StatCard label="Ngày vào làm" value={fmtDate(me.ngayVaoLam)} tone="success" icon={<Users className="h-5 w-5" />} hint={me.trangThai} />
