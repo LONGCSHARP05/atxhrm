@@ -181,7 +181,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           d.donTu.unshift(don);
           log(`Tạo đơn ${don.loai} ngày ${fmtDate(don.tuNgay)}`);
           notify(approvers(d, input.maNV), `Có đơn mới chờ duyệt: ${don.loai} của ${name(input.maNV)}`, don.id);
-        }),
+        });
         return null;
       },
       suaDon: (id, input) =>
