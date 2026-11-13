@@ -210,7 +210,7 @@ export function buildSeed(): AppState {
   const toMin = (h: string) => +h.slice(0, 2) * 60 + +h.slice(3);
   const hm = (m: number) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
   const chamCong: ChamCong[] = [];
-  const months = [["2026-10-01", "2026-10-31"], ["2026-11-01", TODAY]] as const;
+  const months = [["2026-10-01", "2026-10-31"], ["2026-11-01", "2026-11-11"]] as const;
   for (const nv of nhanVien) {
     const ca = caById(caMacDinh[nv.maNV]);
     for (const [from, to] of months) {
@@ -282,6 +282,29 @@ export function buildSeed(): AppState {
     log(tpOf("KDMKT"), `Duyệt đơn Đổi ca của ${name(I)}`, 4300),
     log(hrDemo, "Thêm 2 nhân viên mới phòng Kinh doanh & Marketing", 25000),
   ];
-  void workdays; void CA;
-  return { nhanVien, hopDong, taiKhoan, caMacDinh, caNgoaiLe, chamCong, donTu, thongBao, nhatKy, phepDaDung, bangCongDaXacNhan: ["2026-10"] };
+  // Extend existing rows without replacing identities or existing requests.
+  for (const request of donTu) request.id = "ĐT" + request.id.slice(2).padStart(4, "0");
+  donTu.push(
+    { id: "ĐT0016", maNV: tpCN, loai: "Nghỉ ốm", tuNgay: "2026-11-06", denNgay: "2026-11-06", soNgay: 1, lyDo: "Khám bệnh theo lịch hẹn", trangThai: "Đã duyệt", nguoiDuyet: hrDemo, ngayTao: "2026-11-05" },
+    { id: "ĐT0017", maNV: demoNV, loai: "Nghỉ ốm", tuNgay: "2026-10-06", denNgay: "2026-10-06", soNgay: 1, lyDo: "Nghỉ khám sức khỏe", trangThai: "Từ chối", nguoiDuyet: tpCN, lyDoTuChoi: "Chưa có giấy khám bệnh", ngayTao: "2026-10-05" },
+    { id: "ĐT0018", maNV: demoNV, loai: "Đi trễ/về sớm", tuNgay: "2026-11-04", kieu: "Đi trễ", gioDuKien: "08:30", soPhut: 30, lyDo: "Đưa người thân đi khám", trangThai: "Đã duyệt", nguoiDuyet: tpCN, ngayTao: "2026-11-03" },
+  );
+  const rotating = nhanVien.filter(n => n.maPB === "CNSP" && !n.laTruongPhong).slice(0, 8);
+  for (const day of daysBetween("2026-10-01", "2026-12-31")) {
+    rotating.forEach((nv, i) => { if (!isWeekend(day) && day >= nv.ngayVaoLam && (!nv.ngayNghiViec || day <= nv.ngayNghiViec)) caNgoaiLe[`${nv.maNV}|${day}`] = (Math.floor((new Date(day).getTime() - new Date("2026-10-05").getTime()) / 604800000) + i) % 2 === 0 ? "SANG" : "CHIEU"; });
+  }
+  // Existing Saturday attendance implies an assigned working shift.
+  chamCong.forEach(c => { if (isWeekend(c.ngay)) caNgoaiLe[`${c.maNV}|${c.ngay}`] = caMacDinh[c.maNV]; });
+  for (const request of donTu.filter(d=>d.trangThai === "Đã duyệt" && d.loai === "Đổi ca" && d.caMoi)) caNgoaiLe[`${request.maNV}|${request.tuNgay}`] = request.caMoi ?? "HC";
+  // Keep original OT totals, represented as approved requests for a single source of truth.
+  for (const c of chamCong.filter(c=>c.ot>0)) {
+    const recorded = donTu.filter(d=>d.maNV===c.maNV && d.tuNgay===c.ngay && d.loai==="Làm thêm giờ" && d.trangThai==="Đã duyệt").reduce((t,d)=>t+(d.soGio??0),0);
+    if (c.ot > recorded) donTu.push({ id: `ĐT${String(donTu.length+1).padStart(4,"0")}`, maNV:c.maNV, loai:"Làm thêm giờ", tuNgay:c.ngay, soGio:c.ot-recorded, lyDo:"Làm thêm theo lịch đã duyệt", trangThai:"Đã duyệt", nguoiDuyet:appr(c.maNV), ngayTao:c.ngay });
+  }
+  thongBao.forEach(t => { if (t.noiDung.includes("đơn") || t.noiDung.includes("Đơn")) { const request = donTu.find(d=>t.noiDung.includes(name(d.maNV)) && t.noiDung.includes(d.loai)) ?? donTu.find(d=>d.maNV===t.maNV && t.noiDung.includes(d.loai)); t.donId=request?.id; } else t.trang=t.noiDung.includes("Bảng công")?"cham-cong":"ho-so"; });
+  const ca = CA.map(c=>({...c, phuCap:0, mau:c.id==="HC"?"office":c.id==="SANG"?"morning":"afternoon"}));
+  const activityLog = nhatKy.map(l=>({ thoiGian:l.thoiGian, maNV:l.maNV, vaiTro:taiKhoan[l.maNV], hanhDong:l.hanhDong, doiTuong:l.maNV, chiTiet:l.hanhDong }));
+  const xacNhanCong = { "2026-10": { maNV:hrDemo, ngay:"2026-11-10" } };
+  void workdays;
+  return { nhanVien, hopDong, taiKhoan, caMacDinh, caNgoaiLe, chamCong, donTu, thongBao, nhatKy, phepDaDung, bangCongDaXacNhan: ["2026-10"], ca, activityLog, xacNhanCong };
 }
