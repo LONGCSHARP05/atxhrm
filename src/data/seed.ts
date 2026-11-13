@@ -296,11 +296,6 @@ export function buildSeed(): AppState {
   // Existing Saturday attendance implies an assigned working shift.
   chamCong.forEach(c => { if (isWeekend(c.ngay)) caNgoaiLe[`${c.maNV}|${c.ngay}`] = caMacDinh[c.maNV]; });
   for (const request of donTu.filter(d=>d.trangThai === "Đã duyệt" && d.loai === "Đổi ca" && d.caMoi)) caNgoaiLe[`${request.maNV}|${request.tuNgay}`] = request.caMoi ?? "HC";
-  // Keep original OT totals, represented as approved requests for a single source of truth.
-  for (const c of chamCong.filter(c=>c.ot>0)) {
-    const recorded = donTu.filter(d=>d.maNV===c.maNV && d.tuNgay===c.ngay && d.loai==="Làm thêm giờ" && d.trangThai==="Đã duyệt").reduce((t,d)=>t+(d.soGio??0),0);
-    if (c.ot > recorded) donTu.push({ id: `ĐT${String(donTu.length+1).padStart(4,"0")}`, maNV:c.maNV, loai:"Làm thêm giờ", tuNgay:c.ngay, soGio:c.ot-recorded, lyDo:"Làm thêm theo lịch đã duyệt", trangThai:"Đã duyệt", nguoiDuyet:appr(c.maNV), ngayTao:c.ngay });
-  }
   thongBao.forEach(t => { if (t.noiDung.includes("đơn") || t.noiDung.includes("Đơn")) { const request = donTu.find(d=>t.noiDung.includes(name(d.maNV)) && t.noiDung.includes(d.loai)) ?? donTu.find(d=>d.maNV===t.maNV && t.noiDung.includes(d.loai)); t.donId=request?.id; } else t.trang=t.noiDung.includes("Bảng công")?"cham-cong":"ho-so"; });
   const ca = CA.map(c=>({...c, phuCap:0, mau:c.id==="HC"?"office":c.id==="SANG"?"morning":"afternoon"}));
   const activityLog = nhatKy.map(l=>({ thoiGian:l.thoiGian, maNV:l.maNV, vaiTro:taiKhoan[l.maNV], hanhDong:l.hanhDong, doiTuong:l.maNV, chiTiet:l.hanhDong }));

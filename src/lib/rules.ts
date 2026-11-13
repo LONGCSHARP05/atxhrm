@@ -1,15 +1,15 @@
 import type { AppState, Ca, CaId, ChamCong, DonTu, NhanVien, Role } from "@/data/types";
-import { OT_TOI_DA_THANG, PHEP_NAM } from "@/data/types";
+import { DEFAULT_CONFIG, type AppConfig } from "@/data/config";
 import { addDays, isWeekend, monthOf, TODAY, workdays } from "./date";
 
 export const toMin = (h: string) => +h.slice(0, 2) * 60 + +h.slice(3, 5);
 /** Check-in more than 15 minutes after shift start is "Trễ". */
-export const laTre = (gio: string, ca: Ca) => toMin(gio) > toMin(ca.batDau) + 15;
+export const laTre = (gio: string, ca: Ca, grace = DEFAULT_CONFIG.anHan) => toMin(gio) > toMin(ca.batDau) + grace;
 /** Check-out before shift end is "Về sớm". */
 export const laVeSom = (gio: string, ca: Ca) => toMin(gio) < toMin(ca.ketThuc);
 
 export function tongHop(recs: ChamCong[]) {
-  const cong = recs.filter((r) => (r.loai === "Làm việc" && r.gioVao) || r.loai === "Nghỉ phép").length;
+  const cong = recs.filter((r) => (r.loai === "Làm việc" && r.gioVao && r.gioRa) || r.loai === "Nghỉ phép").length;
   return {
     cong,
     diMuon: recs.filter((r) => r.tre).length,
@@ -30,8 +30,8 @@ export const caHienThi = (s: AppState, maNV: string, ngay: string): CaId | "OFF"
 export const dangLam = (n: NhanVien) => n.trangThai !== "Đã nghỉ việc";
 export const roleOf = (s: AppState, maNV: string): Role => s.taiKhoan[maNV] ?? "nv";
 
-export const phepConLai = (s: AppState, maNV: string, boQuaDon?: string) =>
-  PHEP_NAM - (s.phepDaDung[maNV] ?? 0) -
+export const phepConLai = (s: AppState, maNV: string, boQuaDon?: string, config: AppConfig = DEFAULT_CONFIG) =>
+  config.phepNam - (s.phepDaDung[maNV] ?? 0) -
   s.donTu.filter((d) => d.maNV === maNV && d.loai === "Nghỉ phép năm" && d.trangThai === "Chờ duyệt" && d.id !== boQuaDon)
     .reduce((t, d) => t + (d.soNgay ?? 0), 0);
 
@@ -59,14 +59,14 @@ export function kiemTraDon(d: DonInput, ctx: DonCtx): string | null {
   }
   if (d.loai === "Làm thêm giờ") {
     if (!d.soGio || d.soGio <= 0) return "Số giờ làm thêm phải lớn hơn 0";
-    if (ctx.otThang + d.soGio > OT_TOI_DA_THANG) return `Tổng OT tháng vượt ${OT_TOI_DA_THANG} giờ (đã có ${ctx.otThang} giờ)`;
+    if (ctx.otThang + d.soGio > DEFAULT_CONFIG.otToiDa) return `Tổng OT tháng vượt ${DEFAULT_CONFIG.otToiDa} giờ (đã có ${ctx.otThang} giờ)`;
   }
   if (d.loai === "Đi trễ/về sớm" && (!d.soPhut || d.soPhut <= 0)) return "Vui lòng nhập số phút";
   return null;
 }
 
 export function kiemTraTuChoi(lyDo: string): string | null {
-  return lyDo.trim() ? null : "Từ chối bắt buộc nhập lý do";
+  return lyDo.trim().length >= 5 ? null : "Từ chối bắt buộc nhập lý do";
 }
 
 /** Who approves: department head for staff; HR for heads and board members. */

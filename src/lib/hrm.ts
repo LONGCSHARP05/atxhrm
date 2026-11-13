@@ -22,7 +22,7 @@ export function dailyAttendance(s: AppState, id: string, day: string, cfg = DEFA
   const absence = !!ca && !leave && !rec?.gioVao && day < TODAY;
   const cong = paidLeave || (!!ca && !sick && !!rec?.gioVao && !!rec.gioRa) ? 1 : 0;
   const statuses = paidLeave ? ['Nghỉ phép'] : sick ? ['Nghỉ ốm'] : !ca ? ['Không làm việc'] : absence ? ['Vắng'] : day > TODAY ? ['Chưa đến ngày'] : !rec?.gioVao ? ['Chưa chấm công'] : [late ? 'Trễ' : 'Đúng giờ', ...(early ? ['Về sớm'] : [])];
-  return { day, ca, rec, requests, cong, late: +late, early: +early, leave: +paidLeave, sick: +sick, absence: +absence, ot: requests.filter(d => d.loai === 'Làm thêm giờ').reduce((t,d) => t + (d.soGio ?? 0), 0), statuses, note: [rec?.ghiChu, ...requests.map(d => `Có đơn ${d.loai.toLowerCase()} ${d.id}`)].filter(Boolean).join('; ') };
+  return { day, ca, rec, requests, cong, late: +late, early: +early, leave: +paidLeave, sick: +sick, absence: +absence, ot: Math.max(rec?.ot ?? 0, requests.filter(d => d.loai === 'Làm thêm giờ').reduce((t,d) => t + (d.soGio ?? 0), 0)), statuses, note: [rec?.ghiChu, ...requests.map(d => `Có đơn ${d.loai.toLowerCase()} ${d.id}`)].filter(Boolean).join('; ') };
 }
 export const monthDays = (m: string) => daysBetween(m + '-01', addDays(new Date(Number(m.slice(0,4)), Number(m.slice(5)), 1).toLocaleDateString('en-CA').split('/').reverse().join('-'), -1));
 export function daysInMonth(m: string) { const end = new Date(Number(m.slice(0,4)), Number(m.slice(5)), 0).getDate(); return daysBetween(`${m}-01`, `${m}-${end}`); }
