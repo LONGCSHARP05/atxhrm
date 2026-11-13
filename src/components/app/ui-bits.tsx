@@ -34,7 +34,8 @@ const MAP: Record<string, "success" | "warning" | "danger" | "info" | "muted"> =
   "Từ chối": "danger", "Đã nghỉ việc": "muted", "Chưa xác nhận": "warning",
 };
 export function StatusBadge({ value }: { value: string }) {
-  return <Badge variant={MAP[value] ?? "muted"}>{value}</Badge>;
+  const tone = ["Đúng giờ","Đã duyệt","Hoàn tất","Đã xác nhận"].includes(value)?"success":["Chờ duyệt","Trễ","Chưa xác nhận"].includes(value)?"warning":value==="Về sớm"?"early":["Vắng","Từ chối"].includes(value)?"danger":value==="Nghỉ phép"?"leave":value==="Nghỉ ốm"?"sick":"off";
+  return <Badge variant={MAP[value] ?? "muted"} className={`status-${tone} whitespace-nowrap`}>{value}</Badge>;
 }
 
 export function Initials({ name, className }: { name: string; className?: string }) {

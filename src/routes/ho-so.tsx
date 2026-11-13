@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Pencil, Plus, Search, UserX } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Initials, PageHeader, StatusBadge, thCls } from "@/components/app/ui-bits";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -12,13 +12,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { PHONG_BAN, tenPB } from "@/data/phongBan";
-import { PHEP_NAM, type LoaiHD, type NhanVien } from "@/data/types";
+import { useConfig } from "@/data/config";
+import { type LoaiHD, type NhanVien } from "@/data/types";
 import { fmtDate, fmtMoney, TODAY } from "@/lib/date";
 import { seo } from "@/lib/nav";
 import { phepConLai } from "@/lib/rules";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/ho-so")({
+  validateSearch: (search: Record<string, unknown>): {nv?: string} => ({nv:typeof search.nv==="string"?search.nv:undefined}),
   head: () => seo("Hồ sơ nhân sự", "Danh sách và chi tiết hồ sơ nhân viên ATX Global."),
   component: HoSoPage,
 });
@@ -29,6 +31,7 @@ function HoSoPage() {
   const { state, me, role, search, setSearch } = useStore();
   const [pb, setPb] = useState("all");
   const [tt, setTt] = useState("all");
+  const {nv} = Route.useSearch();
   const [detail, setDetail] = useState<string | null>(null);
   const [edit, setEdit] = useState<NhanVien | "new" | null>(null);
   const [del, setDel] = useState<NhanVien | null>(null);
@@ -39,6 +42,7 @@ function HoSoPage() {
     if (role === "tp") return state.nhanVien.filter((n) => n.maPB === me!.maPB);
     return state.nhanVien.filter((n) => n.maNV === me!.maNV);
   }, [state.nhanVien, role, me]);
+  useEffect(()=>{if(nv && scope.some(n=>n.maNV===nv))setDetail(nv);},[nv,scope]);
   const q = unaccent(search);
   const rows = scope.filter((n) =>
     (pb === "all" || n.maPB === pb) && (tt === "all" || n.trangThai === tt) &&
@@ -146,6 +150,7 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 function Detail({ maNV }: { maNV: string }) {
   const { state } = useStore();
+  const { config } = useConfig();
   const n = state.nhanVien.find((x) => x.maNV === maNV)!;
   const hd = state.hopDong.find((h) => h.maNV === maNV);
   const used = state.phepDaDung[maNV] ?? 0;
@@ -178,11 +183,11 @@ function Detail({ maNV }: { maNV: string }) {
         </TabsContent>
         <TabsContent value="phep" className="pt-4">
           <div className="grid grid-cols-3 gap-3">
-            {[["Tổng phép năm", PHEP_NAM], ["Đã dùng", used], ["Còn lại", PHEP_NAM - used]].map(([l, v]) => (
+            {[["Tổng phép năm", config.phepNam], ["Đã dùng", used], ["Còn lại", config.phepNam - used]].map(([l, v]) => (
               <div key={l} className="rounded-lg bg-secondary p-4 text-center"><p className="text-xs text-muted-foreground">{l}</p><p className="text-2xl font-bold text-primary">{v}</p></div>
             ))}
           </div>
-          <p className="mt-2 text-xs text-muted-foreground">Khả dụng đăng ký mới (trừ đơn đang chờ): {phepConLai(state, maNV)} ngày</p>
+          <p className="mt-2 text-xs text-muted-foreground">Khả dụng đăng ký mới (trừ đơn đang chờ): {phepConLai(state, maNV, undefined, config)} ngày</p>
           <ul className="mt-4 divide-y text-sm">
             {leaves.map((d) => <li key={d.id} className="flex justify-between py-2"><span>{fmtDate(d.tuNgay)} → {fmtDate(d.denNgay)} · {d.soNgay} ngày</span><StatusBadge value={d.trangThai} /></li>)}
           </ul>

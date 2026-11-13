@@ -18,7 +18,7 @@ export const NAV: NavItem[] = [
     children: [
       { title: "Bảng chấm công", to: "/cham-cong", roles: ["nv", "tp", "hr", "kt"] },
       { title: "Lịch làm việc", to: "/lich-lam-viec", roles: STAFF },
-      { title: "Đơn từ", to: "/don-tu", roles: STAFF },
+      { title: "Đơn từ", to: "/don-tu", roles: ["nv", "tp", "hr", "kt"] },
     ],
   },
   { title: "Đánh giá KPI", to: "/kpi", icon: Target, roles: STAFF },
