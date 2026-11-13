@@ -217,7 +217,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           }
           log(`Duyệt đơn ${don.loai} của ${name(don.maNV)}`);
           notify(don.maNV, `Đơn ${don.loai} ngày ${fmtDate(don.tuNgay)} của bạn đã được duyệt`,don.id);
-        }),
+        });
         return null;
       },
       tuChoiDon: (id, lyDo) => {

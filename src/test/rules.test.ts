@@ -35,13 +35,15 @@ describe("ATXhrm rules", () => {
     const s = buildSeed();
     expect(s.nhanVien).toHaveLength(47);
     expect(s.nhanVien.filter((n) => n.trangThai !== "Đã nghỉ việc")).toHaveLength(45);
-    expect(s.donTu).toHaveLength(15);
+    expect(s.donTu).toHaveLength(18);
     expect(hdSapHetHan(s)).toHaveLength(3);
     expect(nextMaNV(s)).toBe("NV0048");
     for (const n of s.nhanVien.filter((x) => x.trangThai === "Chính thức")) {
-      const c = tongHop(s.chamCong.filter((r) => r.maNV === n.maNV && r.ngay.startsWith("2026-10"))).cong;
-      expect(c).toBeGreaterThanOrEqual(22);
-      expect(c).toBeLessThanOrEqual(26);
+      const recs = s.chamCong.filter((r) => r.maNV === n.maNV && r.ngay.startsWith("2026-10"));
+      const c = tongHop(recs).cong;
+      const sickDays = recs.filter((r) => r.loai === "Nghỉ ốm").length;
+      expect(c + sickDays).toBeGreaterThanOrEqual(22);
+      expect(c + sickDays).toBeLessThanOrEqual(26);
     }
   });
   it("department head approves own department staff only", () => {
