@@ -1,0 +1,30 @@
+import type { AppState, NhanVien } from '@/data/types';
+import type { AppConfig } from '@/data/config';
+import { PHONG_BAN } from '@/data/phongBan';
+import { attendanceMonth } from './hrm';
+import { daysInMonth } from './hrm';
+import { isWeekend } from './date';
+export interface Criterion { id:string; name:string; method:string; weight:number }
+export interface Evaluation { id:string; maNV:string; month:string; criteria:Criterion[]; self:(number|null)[]; manager:(number|null)[]; comments:string[]; status:'Chờ tự đánh giá'|'Chờ quản lý đánh giá'|'Hoàn tất' }
+export interface CompensationData { criteria:Record<string,Criterion[]>; evaluations:Evaluation[]; opened:string[]; payroll:Record<string,PayrollPeriod> }
+export interface PayrollRow { maNV:string; base:number; days:number; otHours:number; salary:number; overtime:number; exemptOT:number; bonus:number; grade:string; allowances:number; meal:number; gross:number; bhxh:number; bhyt:number; bhtn:number; insurance:number; taxableIncome:number; dependentDeduction:number; personalDeduction:number; taxBase:number; taxBrackets:{amount:number;rate:number;tax:number}[]; tax:number; net:number }
+export interface PayrollPeriod { status:'Nháp'|'Đã chốt'; rows:PayrollRow[]; closedBy?:string; closedAt?:string }
+export const eligibleKpi=(n:NhanVien,m:string)=>n.maPB!=='BGD'&&n.ngayVaoLam<`${m}-01`&&(!n.ngayNghiViec||n.ngayNghiViec>=`${m}-01`);
+export const criteriaValid=(c:Criterion[])=>c.length>0&&c.every(x=>x.name.trim()&&x.method.trim()&&Number.isFinite(x.weight)&&x.weight>0)&&c.reduce((t,x)=>t+x.weight,0)===100;
+export const scoresComplete=(scores:(number|null)[])=>scores.length>0&&scores.every(x=>x!==null&&Number.isFinite(x)&&x>=0&&x<=100);
+export function kpiResult(e:Evaluation,c:AppConfig) {const score=e.criteria.reduce((t,x,i)=>t+(e.manager[i]??0)*x.weight,0)/100;return {score,grade:score>=c.nguongA?'A':score>=c.nguongB?'B':score>=c.nguongC?'C':'D'};}
+export function taxBreakdown(base:number,c:AppConfig) {let from=0;return c.thue.map(b=>{const amount=Math.max(0,Math.min(base,b.den??base)-from);from=b.den??base;return {amount,rate:b.tyLe,tax:amount*b.tyLe};});}
+export function calculatePayroll(s:AppState,data:CompensationData,m:string,c:AppConfig):PayrollRow[] {
+ return s.nhanVien.flatMap(n=>{const h=s.hopDong.find(x=>x.maNV===n.maNV),a=attendanceMonth(s,n.maNV,m,c);if(!h||!a.cong)return [];
+ const base=h.luongCoBan,round=Math.round,salary=round(base/c.congChuan*a.cong);let overtime=0,exemptOT=0,otHours=0;
+ for(const d of a.days){const requests=d.requests.filter(x=>x.loai==='Làm thêm giờ');let remaining=d.ot;for(const req of requests){const hours=Math.min(remaining,req.soGio??0);const factor=req.loaiNgayOT==='Lễ'?c.otLe:req.loaiNgayOT==='Cuối tuần'?c.otCuoiTuan:c.otThuong;const pay=hours*base/c.congChuan/c.gioLamNgay*factor;overtime+=pay;exemptOT+=pay*(factor-1)/factor;remaining-=hours;otHours+=hours;}if(remaining>0){const factor=isWeekend(d.day)?c.otCuoiTuan:c.otThuong;const pay=remaining*base/c.congChuan/c.gioLamNgay*factor;overtime+=pay;exemptOT+=pay*(factor-1)/factor;otHours+=remaining;}}
+ overtime=round(overtime);exemptOT=round(exemptOT);const e=data.evaluations.find(x=>x.maNV===n.maNV&&x.month===m&&x.status==='Hoàn tất'),grade=e?kpiResult(e,c).grade:'';const rate=grade==='A'?c.kpiA:grade==='B'?c.kpiB:grade==='C'?c.kpiC:grade==='D'?c.kpiD:0,bonus=round(base*rate),allowances=h.phuCapAnTrua+h.phuCapChucDanh,meal=Math.min(h.phuCapAnTrua,c.tranAnTrua),gross=salary+overtime+bonus+allowances,bhxh=round(base*c.bhxh),bhyt=round(base*c.bhyt),bhtn=round(base*c.bhtn),insurance=round(base*(c.bhxh+c.bhyt+c.bhtn)),taxableIncome=gross-exemptOT-meal,dependentDeduction=c.giamTruPhuThuoc*n.soNguoiPhuThuoc,personalDeduction=c.giamTruBanThan,taxBase=Math.max(0,taxableIncome-insurance-personalDeduction-dependentDeduction),taxBrackets=taxBreakdown(taxBase,c),tax=round(taxBrackets.reduce((t,b)=>t+b.tax,0));
+ return [{maNV:n.maNV,base,days:a.cong,otHours,salary,overtime,exemptOT,bonus,grade,allowances,meal,gross,bhxh,bhyt,bhtn,insurance,taxableIncome,dependentDeduction,personalDeduction,taxBase,taxBrackets,tax,net:gross-insurance-tax}];});
+}
+export function buildCompensation(s:AppState,c:AppConfig):CompensationData {
+ const criteria:Record<string,Criterion[]>={};for(const p of PHONG_BAN.filter(p=>p.maPB!=='BGD'))criteria[p.maPB]=['Chất lượng công việc','Tiến độ','Xử lý vấn đề','Làm việc nhóm','Học hỏi'].map((name,i)=>({id:`${p.maPB}-${i}`,name:p.maPB==='CNSP'&&i===0?'Chất lượng code':name,method:['Đạt yêu cầu chuyên môn','Hoàn thành đúng hạn','Giải quyết hiệu quả','Phối hợp với đồng nghiệp','Cải thiện năng lực'][i],weight:[30,25,20,15,10][i]}));
+ const data:CompensationData={criteria,evaluations:[],opened:['2026-10','2026-11'],payroll:{}};
+ for(const m of data.opened)s.nhanVien.filter(n=>eligibleKpi(n,m)).forEach((n,i)=>{const cr=structuredClone(criteria[n.maPB]??[]),score=i%20<5?94:i%20<14?82:i%20<19?68:50,status=m==='2026-10'||i%3===0?'Hoàn tất':i%3===1?'Chờ quản lý đánh giá':'Chờ tự đánh giá';data.evaluations.push({id:`${m}-${n.maNV}`,maNV:n.maNV,month:m,criteria:cr,self:cr.map(()=>status==='Chờ tự đánh giá'?null:Math.min(100,score+3)),manager:cr.map(()=>status==='Hoàn tất'?score:null),comments:cr.map(()=>status==='Hoàn tất'?'Hoàn thành theo mục tiêu kỳ':'') ,status});});
+ data.payroll['2026-10']={status:'Đã chốt',rows:calculatePayroll(s,data,'2026-10',c),closedBy:Object.keys(s.taiKhoan).find(id=>s.taiKhoan[id]==='kt'),closedAt:'2026-11-05T09:00:00+07:00'};return data;
+}
+export function personnelMovement(s:AppState,m:string,pb:string){const from=`${m}-01`,end=daysInMonth(m).at(-1)??from,rows=s.nhanVien.filter(n=>n.maPB===pb),start=rows.filter(n=>n.ngayVaoLam<from&&(!n.ngayNghiViec||n.ngayNghiViec>=from)).length,joined=rows.filter(n=>n.ngayVaoLam>=from&&n.ngayVaoLam<=end).length,left=rows.filter(n=>n.ngayNghiViec&&n.ngayNghiViec>=from&&n.ngayNghiViec<=end).length;return {start,joined,left,end:start+joined-left};}
