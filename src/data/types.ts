@@ -49,6 +49,8 @@ export interface AppState {
   hopDong: HopDong[];
   taiKhoan: Record<string, Role>;
   taiKhoanKhoa: Record<string, boolean>;
+  matKhau: Record<string, string>;
+  buocDoiMatKhau: Record<string, boolean>;
   caMacDinh: Record<string, CaId>;
   caNgoaiLe: Record<string, CaId | "OFF">;
   chamCong: ChamCong[];

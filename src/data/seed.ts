@@ -300,6 +300,9 @@ export function buildSeed(): AppState {
   const ca = CA.map(c=>({...c, phuCap:0, mau:c.id==="HC"?"office":c.id==="SANG"?"morning":"afternoon"}));
   const activityLog = nhatKy.map(l=>({ thoiGian:l.thoiGian, maNV:l.maNV, vaiTro:taiKhoan[l.maNV], hanhDong:l.hanhDong, doiTuong:l.maNV, chiTiet:l.hanhDong }));
   const xacNhanCong = { "2026-10": { maNV:hrDemo, ngay:"2026-11-10" } };
+  const matKhau: Record<string, string> = {};
+  const buocDoiMatKhau: Record<string, boolean> = {};
+  nhanVien.forEach(nv => { matKhau[nv.maNV] = "123456"; buocDoiMatKhau[nv.maNV] = false; });
   void workdays;
-  return { nhanVien, hopDong, taiKhoan, taiKhoanKhoa: {}, caMacDinh, caNgoaiLe, chamCong, donTu, thongBao, nhatKy, phepDaDung, bangCongDaXacNhan: ["2026-10"], ca, activityLog, xacNhanCong };
+  return { nhanVien, hopDong, taiKhoan, taiKhoanKhoa: {}, matKhau, buocDoiMatKhau, caMacDinh, caNgoaiLe, chamCong, donTu, thongBao, nhatKy, phepDaDung, bangCongDaXacNhan: ["2026-10"], ca, activityLog, xacNhanCong };
 }
