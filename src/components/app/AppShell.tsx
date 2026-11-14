@@ -20,7 +20,7 @@ function Sidebar() {
   const [closed, setClosed] = useState<Record<string, boolean>>({});
   const leafCls = (active: boolean) =>
     cn("flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors", active ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium" : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground");
-  const visible = (l: NavLeaf) => l.roles.includes(role);
+  const visible = (l: NavLeaf) => role === "admin" || l.roles.includes(role);
   return (
     <aside className="hidden md:flex sticky top-0 flex h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground">
       <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
@@ -154,7 +154,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <Sidebar />
       <div className="flex min-w-0 flex-1 flex-col">
         <Topbar />
-        <nav className="flex gap-2 overflow-x-auto border-b bg-card p-2 md:hidden">{NAV.flatMap(i=>"children" in i?i.children:[i]).filter(i=>i.roles.includes(role)).map(i=><Button key={i.to} asChild variant={path===i.to?"default":"ghost"} size="sm"><Link to={i.to}>{i.title}</Link></Button>)}</nav>
+        <nav className="flex gap-2 overflow-x-auto border-b bg-card p-2 md:hidden">{NAV.flatMap(i=>"children" in i?i.children:[i]).filter(i=>role === "admin" || i.roles.includes(role)).map(i=><Button key={i.to} asChild variant={path===i.to?"default":"ghost"} size="sm"><Link to={i.to}>{i.title}</Link></Button>)}</nav>
         <main className="flex-1 p-3 sm:p-6 lg:p-8">
           {canSee(path, role) ? children : (
             <div className="card-surface mx-auto mt-10 flex max-w-md flex-col items-center gap-3 p-10 text-center">

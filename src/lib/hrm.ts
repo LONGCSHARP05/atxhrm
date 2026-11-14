@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG, type AppConfig } from '@/data/config';
 import { addDays, daysBetween, dow, isWeekend, monthOf, TODAY, workdays } from './date';
 import type { DonInput } from './rules';
 export const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
-export const visibleEmployees = (s: AppState, me: NhanVien, role: Role, allForAccounting = false) => s.nhanVien.filter(n => role === 'hr' || (role === 'kt' && allForAccounting) || (role === 'tp' ? n.maPB === me.maPB : n.maNV === me.maNV));
+export const visibleEmployees = (s: AppState, me: NhanVien, role: Role, allForAccounting = false) => s.nhanVien.filter(n => role === 'admin' || role === 'hr' || (role === 'kt' && allForAccounting) || (role === 'tp' ? n.maPB === me.maPB : n.maNV === me.maNV));
 export const shiftFor = (s: AppState, id: string, day: string): Ca | undefined => {
   const n = s.nhanVien.find(n => n.maNV === id);
   if (!n || day < n.ngayVaoLam || (n.ngayNghiViec && day > n.ngayNghiViec)) return;
@@ -36,32 +36,32 @@ export const approverIds = (s: AppState, id: string) => {
 };
 export function validateRequest(s: AppState, d: DonInput, cfg: AppConfig = DEFAULT_CONFIG): Record<string,string> {
   const errors: Record<string,string> = {}, end = d.denNgay ?? d.tuNgay;
-  if (!d.tuNgay) errors.tuNgay = 'Vui lòng chọn ngày';
-  if (!d.lyDo.trim() || (d.loai === 'Nghỉ phép năm' && d.lyDo.trim().length < 10)) errors.lyDo = d.loai === 'Nghỉ phép năm' ? 'Lý do phải có ít nhất 10 ký tự' : 'Vui lòng nhập lý do';
+  if (!d.tuNgay) errors['tuNgay'] = 'Vui lòng chọn ngày';
+  if (!d.lyDo.trim() || (d.loai === 'Nghỉ phép năm' && d.lyDo.trim().length < 10)) errors['lyDo'] = d.loai === 'Nghỉ phép năm' ? 'Lý do phải có ít nhất 10 ký tự' : 'Vui lòng nhập lý do';
   if (d.loai === 'Nghỉ phép năm' || d.loai === 'Nghỉ ốm') {
-    if (!d.denNgay || end < d.tuNgay) errors.denNgay = 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu';
+    if (!d.denNgay || end < d.tuNgay) errors['denNgay'] = 'Ngày kết thúc phải sau hoặc bằng ngày bắt đầu';
     const count = workdays(d.tuNgay, end);
-    if (!count) errors.denNgay = 'Khoảng nghỉ không có ngày làm việc';
+    if (!count) errors['denNgay'] = 'Khoảng nghỉ không có ngày làm việc';
     const remaining = cfg.phepNam - (s.phepDaDung[d.maNV] ?? 0) - s.donTu.filter(x=>x.maNV===d.maNV && x.loai==='Nghỉ phép năm' && x.trangThai==='Chờ duyệt').reduce((t,x)=>t+(x.soNgay??0),0);
-    if (d.loai === 'Nghỉ phép năm' && count > remaining) errors.denNgay = 'Số ngày nghỉ vượt số dư phép còn lại';
+    if (d.loai === 'Nghỉ phép năm' && count > remaining) errors['denNgay'] = 'Số ngày nghỉ vượt số dư phép còn lại';
   }
   if (d.tuNgay && end >= d.tuNgay) {
-    if (daysBetween(d.tuNgay,end).some(day => s.bangCongDaXacNhan.includes(monthOf(day)))) errors.tuNgay = 'Kỳ chấm công đã xác nhận, không thể tạo đơn';
-    if (s.donTu.some(x=>x.maNV===d.maNV && x.trangThai!=='Từ chối' && x.tuNgay<=end && (x.denNgay??x.tuNgay)>=d.tuNgay)) errors.tuNgay = 'Khoảng thời gian trùng với đơn hiện có';
+    if (daysBetween(d.tuNgay,end).some(day => s.bangCongDaXacNhan.includes(monthOf(day)))) errors['tuNgay'] = 'Kỳ chấm công đã xác nhận, không thể tạo đơn';
+    if (s.donTu.some(x=>x.maNV===d.maNV && x.trangThai!=='Từ chối' && x.tuNgay<=end && (x.denNgay??x.tuNgay)>=d.tuNgay)) errors['tuNgay'] = 'Khoảng thời gian trùng với đơn hiện có';
   }
   if (d.loai === 'Đổi ca') {
     const ca = shiftFor(s,d.maNV,d.tuNgay);
-    if (!ca) errors.tuNgay = 'Ngày đã chọn không có ca làm việc';
-    if (!d.caMoi || d.caMoi===ca?.id) errors.caMoi = 'Ca mới phải khác ca hiện tại';
+    if (!ca) errors['tuNgay'] = 'Ngày đã chọn không có ca làm việc';
+    if (!d.caMoi || d.caMoi===ca?.id) errors['caMoi'] = 'Ca mới phải khác ca hiện tại';
   }
-  if (d.loai === 'Đi trễ/về sớm' && !d.gioDuKien) errors.gioDuKien = 'Vui lòng chọn giờ dự kiến';
+  if (d.loai === 'Đi trễ/về sớm' && !d.gioDuKien) errors['gioDuKien'] = 'Vui lòng chọn giờ dự kiến';
   if (d.loai === 'Làm thêm giờ') {
-    if (!d.soGio || d.soGio<0.5 || d.soGio>8 || d.soGio%0.5!==0) errors.soGio='Số giờ từ 0,5 đến 8, bước 0,5';
+    if (!d.soGio || d.soGio<0.5 || d.soGio>8 || d.soGio%0.5!==0) errors['soGio']='Số giờ từ 0,5 đến 8, bước 0,5';
     const total = s.donTu.filter(x=>x.maNV===d.maNV && x.loai==='Làm thêm giờ' && x.trangThai!=='Từ chối' && monthOf(x.tuNgay)===monthOf(d.tuNgay)).reduce((t,x)=>t+(x.soGio??0),0);
-    if (total+(d.soGio??0)>cfg.otToiDa) errors.soGio=`Tổng OT tháng vượt ${cfg.otToiDa} giờ`;
+    if (total+(d.soGio??0)>cfg.otToiDa) errors['soGio']=`Tổng OT tháng vượt ${cfg.otToiDa} giờ`;
   }
   return errors;
 }
-export const credentialsValid = (s: AppState, username: string, password: string) => password === '123456' && s.nhanVien.some(n=>n.maNV.toLowerCase()===username.trim().toLowerCase() && n.trangThai!=='Đã nghỉ việc');
+export const credentialsValid = (s: AppState, username: string, password: string) => password === '123456' && !s.taiKhoanKhoa[username.trim().toUpperCase()] && s.nhanVien.some(n=>n.maNV.toLowerCase()===username.trim().toLowerCase() && n.trangThai!=='Đã nghỉ việc');
 export const assignmentDays = (from: string,to: string,mode: string) => daysBetween(from,to).filter(d=>mode==='all' || (mode==='six' ? dow(d)!==0 : !isWeekend(d)));
 export const shiftTone = (id?: CaId) => id === 'SANG' ? 'shift-morning' : id === 'CHIEU' ? 'shift-afternoon' : 'shift-office';

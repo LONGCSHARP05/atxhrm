@@ -76,7 +76,8 @@ export function coTheDuyet(s: AppState, user: string, d: DonTu) {
   const u = s.nhanVien.find((n) => n.maNV === user);
   if (!nguoiTao || !u) return false;
   const r = roleOf(s, d.maNV);
-  if (r === "tp" || r === "bgd") return roleOf(s, user) === "hr";
+  if (roleOf(s, user) === "admin") return true;
+  if (r === "tp" || r === "admin") return roleOf(s, user) === "hr";
   return roleOf(s, user) === "tp" && u.maPB === nguoiTao.maPB;
 }
 

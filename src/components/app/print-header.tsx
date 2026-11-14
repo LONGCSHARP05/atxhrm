@@ -1,0 +1,1 @@
+export function PrintHeader({title,month}:{title:string;month:string}){return <header className="mb-6 space-y-2 text-center"><p className="font-bold">CÔNG TY TNHH ATX GLOBAL</p><h2 className="text-xl font-bold">{title}</h2><p>Kỳ {month.slice(5)}/{month.slice(0,4)}</p></header>;}
