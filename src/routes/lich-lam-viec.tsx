@@ -38,7 +38,7 @@ const SHIFT_OPTIONS: { id: CaId | "OFF"; label: string }[] = [
 
 function LichLamViecPage() {
   const { role } = useStore();
-  const isHR = role === "hr";
+  const isHR = (role === "hr" || role === "admin");
   return (
     <Tabs defaultValue="lich">
       <TabsList>
@@ -97,7 +97,7 @@ function LichTab() {
 
   const isLocked = (day: string) => state.bangCongDaXacNhan.includes(day.slice(0, 7));
 
-  const canAssign = role === "hr";
+  const canAssign = (role === "hr" || role === "admin");
 
   const prevWeek = () => setAnchor(addDays(anchor, -7));
   const nextWeek = () => setAnchor(addDays(anchor, 7));
@@ -304,7 +304,7 @@ function WeeklyGrid({
                 bulk={bulk}
                 toggleBulk={toggleBulk}
                 canBulk={canBulk}
-                onAssign={(maNV, day, ca) => {
+                onAssign={(maNV: string, day: string, ca: CaId | "OFF") => {
                   const existing = caHienThi(state, maNV, day);
                   if (existing !== "OFF" && existing !== ca) {
                     setOverrideCount(1);

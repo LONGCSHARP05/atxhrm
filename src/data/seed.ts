@@ -15,7 +15,7 @@ function rng(seed: number) {
 
 type Flag = { tp?: boolean; demo?: Role; moi?: string; nghi?: boolean; ca?: CaId };
 const ROSTER: [string, string, Flag?][] = [
-  ["BGD", "Tổng Giám đốc", { tp: true, demo: "bgd" }],
+  ["BGD", "Tổng Giám đốc", { tp: true, demo: "admin" }],
   ["BGD", "Phó Tổng Giám đốc"],
   ["BGD", "Giám đốc Tài chính (CFO)"],
   ["HCNS", "Trưởng phòng Hành chính - Nhân sự", { tp: true }],
@@ -133,10 +133,10 @@ export function buildSeed(): AppState {
     const maNV = `NV${String(i + 1).padStart(4, "0")}`;
     const { flag, ...nv } = d;
     nhanVien.push({ maNV, ...nv });
-    taiKhoan[maNV] = flag.demo ?? (nv.maPB === "BGD" ? "bgd" : nv.laTruongPhong ? "tp" : "nv");
+    taiKhoan[maNV] = flag.demo ?? (nv.laTruongPhong ? "tp" : "nv");
     caMacDinh[maNV] = flag.ca ?? "HC";
-    const role = nv.maPB === "BGD" ? "bgd" : nv.laTruongPhong ? "tp" : "nv";
-    const luong = Math.round((role === "bgd" ? ri(60, 90) : role === "tp" ? ri(35, 55) : ri(12, 35) * 2) / (role === "nv" ? 2 : 1) * 1_000_000 / 500_000) * 500_000;
+    const role = nv.maPB === "BGD" ? "admin" : nv.laTruongPhong ? "tp" : "nv";
+    const luong = Math.round((role === "admin" ? ri(60, 90) : role === "tp" ? ri(35, 55) : ri(12, 35) * 2) / (role === "nv" ? 2 : 1) * 1_000_000 / 500_000) * 500_000;
     const loai = nv.trangThai === "Thử việc" ? "Thử việc" : nv.ngayVaoLam < "2025-03-01" ? "Không thời hạn" : "Xác định thời hạn";
     hopDong.push({
       maHD: `HD${String(i + 1).padStart(4, "0")}`,
@@ -145,7 +145,7 @@ export function buildSeed(): AppState {
       ngayKetThuc: nv.ngayNghiViec ?? (loai === "Thử việc" ? addDays(addMonths(nv.ngayVaoLam, 2), -1) : loai === "Xác định thời hạn" ? addDays(addMonths(nv.ngayVaoLam, 36), -1) : null),
       luongCoBan: luong,
       phuCapAnTrua: 1_000_000,
-      phuCapChucDanh: role === "bgd" ? 10_000_000 : role === "tp" ? 5_000_000 : 500_000,
+      phuCapChucDanh: role === "admin" ? 10_000_000 : role === "tp" ? 5_000_000 : 500_000,
     });
     phepDaDung[maNV] = nv.trangThai === "Thử việc" ? 0 : ri(0, 5);
   });
@@ -205,7 +205,7 @@ export function buildSeed(): AppState {
   const leave = new Map<string, "Nghỉ phép" | "Nghỉ ốm">();
   donTu.filter((d) => d.trangThai === "Đã duyệt" && (d.loai === "Nghỉ phép năm" || d.loai === "Nghỉ ốm"))
     .forEach((d) => daysBetween(d.tuNgay, d.denNgay!).forEach((day) => leave.set(`${d.maNV}|${day}`, d.loai === "Nghỉ ốm" ? "Nghỉ ốm" : "Nghỉ phép")));
-  const demos = new Set(["nv", "tp", "hr", "kt", "bgd"].map((x) => (x === "nv" ? demoNV : demo(x as Role))));
+  const demos = new Set(["nv", "tp", "hr", "kt", "admin"].map((x) => (x === "nv" ? demoNV : demo(x as Role))));
   const heavyOT = new Set([A, D, who("CNSP", "DevOps Engineer"), who("KDMKT", "Performance Marketing")]);
   const toMin = (h: string) => +h.slice(0, 2) * 60 + +h.slice(3);
   const hm = (m: number) => `${pad(Math.floor(m / 60))}:${pad(m % 60)}`;
@@ -254,7 +254,7 @@ export function buildSeed(): AppState {
   const t = (min: number) => new Date(now().getTime() - min * 60000).toISOString();
   const name = (m: string) => nhanVien.find((x) => x.maNV === m)!.hoTen;
   const tpCN = tpOf("CNSP");
-  const ktDemo = demo("kt"), bgd = demo("bgd");
+  const ktDemo = demo("kt"), bgd = demo("admin");
   let tb = 0;
   const notif = (maNV: string, noiDung: string, min: number, daDoc = false): ThongBao => ({ id: `TB${++tb}`, maNV, noiDung, thoiGian: t(min), daDoc });
   const thongBao: ThongBao[] = [
@@ -301,5 +301,5 @@ export function buildSeed(): AppState {
   const activityLog = nhatKy.map(l=>({ thoiGian:l.thoiGian, maNV:l.maNV, vaiTro:taiKhoan[l.maNV], hanhDong:l.hanhDong, doiTuong:l.maNV, chiTiet:l.hanhDong }));
   const xacNhanCong = { "2026-10": { maNV:hrDemo, ngay:"2026-11-10" } };
   void workdays;
-  return { nhanVien, hopDong, taiKhoan, caMacDinh, caNgoaiLe, chamCong, donTu, thongBao, nhatKy, phepDaDung, bangCongDaXacNhan: ["2026-10"], ca, activityLog, xacNhanCong };
+  return { nhanVien, hopDong, taiKhoan, taiKhoanKhoa: {}, caMacDinh, caNgoaiLe, chamCong, donTu, thongBao, nhatKy, phepDaDung, bangCongDaXacNhan: ["2026-10"], ca, activityLog, xacNhanCong };
 }

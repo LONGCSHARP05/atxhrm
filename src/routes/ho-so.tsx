@@ -20,7 +20,7 @@ import { phepConLai } from "@/lib/rules";
 import { useStore } from "@/lib/store";
 
 export const Route = createFileRoute("/ho-so")({
-  validateSearch: (search: Record<string, unknown>): {nv?: string} => ({nv:typeof search.nv==="string"?search.nv:undefined}),
+  validateSearch: (search: Record<string, unknown>): {nv?: string} => ({nv:typeof search["nv"]==="string"?search["nv"]:undefined}),
   head: () => seo("Hồ sơ nhân sự", "Danh sách và chi tiết hồ sơ nhân viên ATX Global."),
   component: HoSoPage,
 });
@@ -38,7 +38,7 @@ function HoSoPage() {
   const { nghiViec } = useStore();
 
   const scope = useMemo(() => {
-    if (role === "hr") return state.nhanVien;
+    if ((role === "hr" || role === "admin")) return state.nhanVien;
     if (role === "tp") return state.nhanVien.filter((n) => n.maPB === me!.maPB);
     return state.nhanVien.filter((n) => n.maNV === me!.maNV);
   }, [state.nhanVien, role, me]);
@@ -63,7 +63,7 @@ function HoSoPage() {
       <PageHeader
         title="Hồ sơ nhân sự"
         desc={role === "tp" ? `Nhân sự phòng ${tenPB(me!.maPB)}` : `${state.nhanVien.length} hồ sơ · ${state.nhanVien.filter((n) => n.trangThai !== "Đã nghỉ việc").length} đang làm`}
-        actions={role === "hr" && <Button onClick={() => setEdit("new")}><Plus className="h-4 w-4" />Thêm nhân viên</Button>}
+        actions={(role === "hr" || role === "admin") && <Button onClick={() => setEdit("new")}><Plus className="h-4 w-4" />Thêm nhân viên</Button>}
       />
       <div className="card-surface">
         <div className="flex flex-wrap gap-3 border-b p-4">
@@ -71,7 +71,7 @@ function HoSoPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm theo tên, mã NV, email, chức danh…" className="pl-9" />
           </div>
-          {role === "hr" && (
+          {(role === "hr" || role === "admin") && (
             <Select value={pb} onValueChange={setPb}>
               <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -109,7 +109,7 @@ function HoSoPage() {
                 <TableCell>{fmtDate(n.ngayVaoLam)}</TableCell>
                 <TableCell><StatusBadge value={n.trangThai} /></TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                  {role === "hr" && (
+                  {(role === "hr" || role === "admin") && (
                     <div className="flex justify-end gap-1">
                       <Button size="icon" variant="ghost" aria-label="Sửa" onClick={() => setEdit(n)}><Pencil className="h-4 w-4" /></Button>
                       {n.trangThai !== "Đã nghỉ việc" && <Button size="icon" variant="ghost" aria-label="Xóa" onClick={() => setDel(n)}><UserX className="h-4 w-4 text-destructive" /></Button>}

@@ -58,8 +58,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       s = buildSeed();
     }
     const fresh = buildSeed();
-    s = { ...s, ca: s.ca ?? fresh.ca, activityLog: s.activityLog ?? fresh.activityLog, xacNhanCong: s.xacNhanCong ?? fresh.xacNhanCong };
+    s = { ...s, taiKhoanKhoa: s.taiKhoanKhoa ?? {}, ca: s.ca ?? fresh.ca, activityLog: s.activityLog ?? fresh.activityLog, xacNhanCong: s.xacNhanCong ?? fresh.xacNhanCong };
     if (s.donTu.length < 18) { const additions = fresh.donTu.slice(15,18); for (const d of additions) if (!s.donTu.some(x=>x.id===d.id)) s.donTu.push(d); }
+    for (const id of Object.keys(s.taiKhoan)) { if (String(s.taiKhoan[id]) === "bgd") s.taiKhoan[id] = fresh.taiKhoan[id] ?? "nv"; }
+    s.activityLog.forEach(l=>{if(String(l.vaiTro)==="bgd")l.vaiTro=s.taiKhoan[l.maNV]??"nv";});
     setState(s);
     setUserId(localStorage.getItem(UKEY));
   }, []);
@@ -151,12 +153,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       xacNhanBangCong: (thang) =>
         mutate((d, log, notify) => {
-          if (!me || roleOf(d,me.maNV)!=="hr") return;
+          if (!me || !["hr","admin"].includes(roleOf(d,me.maNV))) return;
           d.xacNhanCong[thang]={maNV:me.maNV,ngay:TODAY};
           if (!d.bangCongDaXacNhan.includes(thang)) d.bangCongDaXacNhan.push(thang);
           const label = `${thang.slice(5)}/${thang.slice(0, 4)}`;
           log(`Xác nhận bảng công kỳ ${label}`);
-          notify([...byRole(d, "kt"), ...byRole(d, "bgd")], `Bảng công kỳ ${label} đã được xác nhận`, undefined, "cham-cong");
+          notify([...byRole(d, "kt"), ...byRole(d, "admin")], `Bảng công kỳ ${label} đã được xác nhận`, undefined, "cham-cong");
         }),
       ganCa: (maNV, ca) =>
         mutate((d, log, notify) => {

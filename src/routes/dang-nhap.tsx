@@ -17,7 +17,7 @@ export const Route = createFileRoute("/dang-nhap")({
 });
 
 const ORDER: { role: Role; mo: string }[] = [
-  { role: "bgd", mo: "Xem Tổng quan và Báo cáo" },
+  { role: "admin", mo: "Quản trị hệ thống" },
   { role: "tp", mo: "Duyệt đơn, xem nhân sự phòng mình" },
   { role: "hr", mo: "Toàn quyền hồ sơ, ca, bảng công" },
   { role: "kt", mo: "Bảng công đã xác nhận, lương" },
@@ -30,7 +30,7 @@ function LoginPage() {
   const [open,setOpen]=useState(false), [username,setUsername]=useState(""), [password,setPassword]=useState("123456"), [show,setShow]=useState(false), [error,setError]=useState("");
   const demo = (r: Role) => {
     const ids = Object.keys(state.taiKhoan).filter((k) => state.taiKhoan[k] === r);
-    const pref = r === "tp" ? ids.find((i) => state.nhanVien.find((n) => n.maNV === i)?.maPB === "CNSP") : r === "bgd" ? ids.find((i) => state.nhanVien.find((n) => n.maNV === i)?.laTruongPhong) : ids[0];
+    const pref = r === "tp" ? ids.find((i) => state.nhanVien.find((n) => n.maNV === i)?.maPB === "CNSP") : r === "admin" ? ids.find((i) => state.nhanVien.find((n) => n.maNV === i)?.laTruongPhong) : ids[0];
     return state.nhanVien.find((n) => n.maNV === (pref ?? ids[0]));
   };
   return (
@@ -64,7 +64,7 @@ function LoginPage() {
           })}
         </div>
       </div>
-      <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-w-md"><DialogHeader><DialogTitle>Đăng nhập ATXhrm</DialogTitle></DialogHeader><form className="space-y-4" onSubmit={e=>{e.preventDefault();if(!login(username,password)){setError("Tên đăng nhập hoặc mật khẩu không đúng");return;}setOpen(false);navigate({to:"/"});}}><div className="space-y-2"><Label htmlFor="username">Tên đăng nhập</Label><Input id="username" autoComplete="username" value={username} onChange={e=>setUsername(e.target.value)} /></div><div className="space-y-2"><Label htmlFor="password">Mật khẩu</Label><div className="flex gap-2"><Input id="password" autoComplete="current-password" type={show?"text":"password"} value={password} onChange={e=>setPassword(e.target.value)} /><Button type="button" variant="outline" size="icon" aria-label={show?"Ẩn mật khẩu":"Hiện mật khẩu"} onClick={()=>setShow(!show)}>{show?<EyeOff/>:<Eye/>}</Button></div></div>{error&&<p role="alert" className="text-sm text-destructive">{error}</p>}<Button type="submit" className="w-full">Đăng nhập<ArrowRight className="h-4 w-4"/></Button></form></DialogContent></Dialog>
+      <Dialog open={open} onOpenChange={setOpen}><DialogContent className="max-w-md"><DialogHeader><DialogTitle>Đăng nhập ATXhrm</DialogTitle></DialogHeader><form className="space-y-4" onSubmit={e=>{e.preventDefault();if(state.taiKhoanKhoa[username.trim().toUpperCase()]){setError("Tài khoản đã bị khóa");return;}if(!login(username,password)){setError("Tên đăng nhập hoặc mật khẩu không đúng");return;}setOpen(false);navigate({to:"/"});}}><div className="space-y-2"><Label htmlFor="username">Tên đăng nhập</Label><Input id="username" autoComplete="username" value={username} onChange={e=>setUsername(e.target.value)} /></div><div className="space-y-2"><Label htmlFor="password">Mật khẩu</Label><div className="flex gap-2"><Input id="password" autoComplete="current-password" type={show?"text":"password"} value={password} onChange={e=>setPassword(e.target.value)} /><Button type="button" variant="outline" size="icon" aria-label={show?"Ẩn mật khẩu":"Hiện mật khẩu"} onClick={()=>setShow(!show)}>{show?<EyeOff/>:<Eye/>}</Button></div></div>{error&&<p role="alert" className="text-sm text-destructive">{error}</p>}<Button type="submit" className="w-full">Đăng nhập<ArrowRight className="h-4 w-4"/></Button></form></DialogContent></Dialog>
     </div>
   );
 }

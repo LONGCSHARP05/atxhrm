@@ -8,8 +8,8 @@ export interface NavLeaf { title: string; to: AppPath; roles: Role[]; icon?: Luc
 export interface NavGroup { title: string; icon: LucideIcon; children: NavLeaf[] }
 export type NavItem = NavLeaf | NavGroup;
 
-const ALL: Role[] = ["nv", "tp", "hr", "kt", "bgd"];
-const STAFF: Role[] = ["nv", "tp", "hr"];
+const ALL: Role[] = ["nv", "tp", "hr", "kt", "admin"];
+const STAFF: Role[] = ["nv", "tp", "hr", "admin"];
 export const NAV: NavItem[] = [
   { title: "Tổng quan", to: "/", icon: LayoutDashboard, roles: ALL },
   { title: "Hồ sơ nhân sự", to: "/ho-so", icon: Users, roles: STAFF },
@@ -25,24 +25,24 @@ export const NAV: NavItem[] = [
   {
     title: "Lương", icon: Wallet,
     children: [
-      { title: "Bảng lương", to: "/bang-luong", roles: ["kt"] },
+      { title: "Bảng lương", to: "/bang-luong", roles: ["hr", "kt", "admin"] },
       { title: "Phiếu lương", to: "/phieu-luong", roles: ["nv", "tp", "hr", "kt"] },
     ],
   },
-  { title: "Báo cáo tổng hợp", to: "/bao-cao", icon: BarChart3, roles: ["hr", "kt", "bgd"] },
+  { title: "Báo cáo tổng hợp", to: "/bao-cao", icon: BarChart3, roles: ["hr", "kt", "tp", "admin"] },
   {
     title: "Quản trị hệ thống", icon: Settings,
     children: [
-      { title: "Phân quyền tài khoản", to: "/phan-quyen", roles: ["hr"] },
+      { title: "Phân quyền tài khoản", to: "/phan-quyen", roles: ["admin"] },
       { title: "Cấu hình tham số", to: "/cau-hinh", roles: ["hr"] },
-      { title: "Nhật ký hoạt động", to: "/nhat-ky", roles: ["hr"] },
+      { title: "Nhật ký hoạt động", to: "/nhat-ky", roles: ["admin"] },
     ],
   },
 ];
 export const LEAVES: NavLeaf[] = NAV.flatMap((i) => ("children" in i ? i.children : [i]));
 export const canSee = (path: string, role: Role) => {
   const leaf = LEAVES.find((l) => l.to === path);
-  return !leaf || leaf.roles.includes(role);
+  return role === "admin" || !leaf || leaf.roles.includes(role);
 };
 
 export const seo = (title: string, description: string) => ({

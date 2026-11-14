@@ -1,10 +1,10 @@
-export type Role = "nv" | "tp" | "hr" | "kt" | "bgd";
+export type Role = "nv" | "tp" | "hr" | "kt" | "admin";
 export const ROLE_LABEL: Record<Role, string> = {
   nv: "Nhân viên",
   tp: "Trưởng phòng",
   hr: "HR",
   kt: "Kế toán",
-  bgd: "Ban Giám đốc",
+  admin: "Admin",
 };
 export type TrangThaiNV = "Thử việc" | "Chính thức" | "Đã nghỉ việc";
 export interface PhongBan { maPB: string; tenPB: string }
@@ -48,6 +48,7 @@ export interface AppState {
   nhanVien: NhanVien[];
   hopDong: HopDong[];
   taiKhoan: Record<string, Role>;
+  taiKhoanKhoa: Record<string, boolean>;
   caMacDinh: Record<string, CaId>;
   caNgoaiLe: Record<string, CaId | "OFF">;
   chamCong: ChamCong[];

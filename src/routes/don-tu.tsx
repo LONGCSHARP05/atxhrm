@@ -28,11 +28,11 @@ import { useStore } from "@/lib/store";
 export const Route = createFileRoute("/don-tu")({
   head: () => seo("Đơn từ", "Quản lý đơn từ nhân sự ATX Global."),
   component: DonTuPage,
-  validateSearch: (search: Record<string, unknown>) => ({
-    mo: (search.mo as string) || undefined,
-    loai: (search.loai as string) || undefined,
-    ngay: (search.ngay as string) || undefined,
-    caCu: (search.caCu as string) || undefined,
+  validateSearch: (search: Record<string, unknown>): {mo?:string;loai?:string;ngay?:string;caCu?:string} => ({
+    mo: (search['mo'] as string) || undefined,
+    loai: (search['loai'] as string) || undefined,
+    ngay: (search['ngay'] as string) || undefined,
+    caCu: (search['caCu'] as string) || undefined,
   }),
 });
 
@@ -61,22 +61,22 @@ function DonTuPage() {
 
   // Auto-open view dialog from ?mo=
   useEffect(() => {
-    if (search.mo) {
-      const d = state.donTu.find((x) => x.id === search.mo);
+    if (search['mo']) {
+      const d = state.donTu.find((x) => x.id === search['mo']);
       if (d) setViewDon(d);
     }
-  }, [search.mo, state.donTu]);
+  }, [search['mo'], state.donTu]);
 
   // Auto-open create dialog from ?loai=
   useEffect(() => {
-    if (search.loai) {
-      setPreselectLoai(search.loai as LoaiDon);
-      setPreselectNgay(search.ngay);
-      setPreselectCaCu(search.caCu);
+    if (search['loai']) {
+      setPreselectLoai(search['loai'] as LoaiDon);
+      setPreselectNgay(search['ngay']);
+      setPreselectCaCu(search['caCu']);
       setCreateOpen(true);
       navigate({ to: "/don-tu", search: {} });
     }
-  }, [search.loai]);
+  }, [search['loai']]);
 
   // Tabs by role
   const tabs = useMemo(() => {
@@ -86,7 +86,7 @@ function DonTuPage() {
       { key: "dept", label: "Đơn phòng ban" },
       { key: "mine", label: "Đơn của tôi" },
     ];
-    if (role === "hr") return [
+    if ((role === "hr" || role === "admin")) return [
       { key: "approve", label: "Chờ tôi duyệt" },
       { key: "all", label: "Tất cả đơn" },
       { key: "mine", label: "Đơn của tôi" },
