@@ -5,3 +5,7 @@
 - [ ] Role-based requests, validated forms, approval/rejection and downstream attendance updates.
 - [ ] Per-user notifications, request deep links and permission-scoped employee search.
 - [ ] Rule tests and desktop/mobile end-to-end checks.
+- [ ] Replace board role with Admin; implement account management, configuration and activity log.
+- [ ] Complete KPI evaluations and department criteria.
+- [ ] Complete payroll calculations, closing and printable payslips.
+- [ ] Complete four shared-data reports and printing.
