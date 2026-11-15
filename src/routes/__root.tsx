@@ -15,6 +15,7 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { ConfigProvider } from "@/data/config";
 import { Button } from "@/components/ui/button";
 import { StoreProvider } from "@/lib/store";
+import { CompensationProvider } from "@/lib/compensation-store";
 import { AppShell } from "@/components/app/AppShell";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -131,12 +132,12 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <ConfigProvider><StoreProvider>
+      <ConfigProvider><StoreProvider><CompensationProvider>
         <AppShell>
           <Outlet />
         </AppShell>
         <Toaster richColors position="top-right" />
-      </StoreProvider></ConfigProvider>
+      </CompensationProvider></StoreProvider></ConfigProvider>
     </QueryClientProvider>
   );
 }
