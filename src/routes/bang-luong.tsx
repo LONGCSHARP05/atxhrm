@@ -18,6 +18,7 @@ import { seo } from "@/lib/nav";
 import { calculatePayroll, type PayrollRow } from "@/lib/compensation";
 import { PayrollDetail } from "@/components/app/payroll-detail";
 import { cn } from "@/lib/utils";
+import { can } from "@/lib/permissions";
 
 export const Route = createFileRoute("/bang-luong")({
   head: () => seo("Bảng lương", "Tính và chốt lương theo kỳ."),
@@ -35,7 +36,7 @@ function BangLuongPage() {
   const [closeOpen, setCloseOpen] = useState(false);
 
   if (!me) return null;
-  const canEdit = role === "kt" || role === "admin";
+  const canEdit = can(role, "luong.calculate");
 
   const period = data.payroll[month];
   const rows = useMemo(() => {
@@ -65,7 +66,11 @@ function BangLuongPage() {
       p.closedBy = me.maNV;
       p.closedAt = new Date().toISOString();
     });
-    updateData(`Chốt lương kỳ ${fmtMonth(month)}`, month, () => {});
+    const ids = period?.rows.map((r) => r.maNV) ?? [];
+    const stamp = new Date().toISOString();
+    updateData(`Chốt lương kỳ ${fmtMonth(month)}`, month, (d) => {
+      ids.forEach((maNV) => d.thongBao.unshift({ id: `TB${Date.now().toString(36)}${maNV}`, maNV, noiDung: `Phiếu lương kỳ ${fmtMonth(month)} đã được chốt`, thoiGian: stamp, daDoc: false, trang: "phieu-luong" }));
+    });
     toast.success(`Đã chốt lương kỳ ${fmtMonth(month)}`);
     setCloseOpen(false);
   };
@@ -105,7 +110,7 @@ function BangLuongPage() {
         <Choice label="Kỳ lương" value={month} onChange={openPeriod} options={[
           ["2026-10", "10/2026"], ["2026-11", "11/2026"],
         ]} />
-        {role !== "tp" && <DepartmentFilter value={pb} onChange={setPb} />}
+        {<DepartmentFilter value={pb} onChange={setPb} />}
         <div className="min-w-48 flex-1"><FormField label="Tìm nhân viên"><Input placeholder="Họ tên / Mã NV" value={q} onChange={(e) => setQ(e.target.value)} /></FormField></div>
         <Button variant="outline" onClick={printPayroll}><Printer className="h-4 w-4" />In bảng lương</Button>
       </div>

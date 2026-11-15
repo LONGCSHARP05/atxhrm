@@ -18,6 +18,7 @@ import { fmtMonth, TODAY } from "@/lib/date";
 import { seo } from "@/lib/nav";
 import { kpiResult, scoresComplete, criteriaValid, type Criterion, type Evaluation } from "@/lib/compensation";
 import { cn } from "@/lib/utils";
+import { can, scopeOf, visibleEmployees } from "@/lib/permissions";
 
 export const Route = createFileRoute("/kpi")({
   head: () => seo("Đánh giá KPI", "Tự đánh giá và đánh giá KPI theo kỳ."),
@@ -27,17 +28,18 @@ export const Route = createFileRoute("/kpi")({
 function KpiPage() {
   const { role, me } = useStore();
   if (!me) return null;
-  const isManager = role === "tp" || role === "hr" || role === "admin";
+  const isManager = scopeOf(role, "kpi") === "dept" || scopeOf(role, "kpi") === "all";
+  const criteria = can(role, "kpi.criteria");
   return (
     <Tabs defaultValue={isManager ? "team" : "self"}>
       <TabsList>
         <TabsTrigger value="self">Đánh giá của tôi</TabsTrigger>
         {(isManager) && <TabsTrigger value="team">Đánh giá đội ngũ</TabsTrigger>}
-        {(role === "hr" || role === "admin") && <TabsTrigger value="criteria">Tiêu chí phòng ban</TabsTrigger>}
+        {criteria && <TabsTrigger value="criteria">Tiêu chí phòng ban</TabsTrigger>}
       </TabsList>
       <TabsContent value="self" className="mt-4"><SelfEvalTab /></TabsContent>
       {isManager && <TabsContent value="team" className="mt-4"><TeamEvalTab /></TabsContent>}
-      {(role === "hr" || role === "admin") && <TabsContent value="criteria" className="mt-4"><CriteriaTab /></TabsContent>}
+      {criteria && <TabsContent value="criteria" className="mt-4"><CriteriaTab /></TabsContent>}
     </Tabs>
   );
 }
@@ -151,8 +153,7 @@ function TeamEvalTab() {
   if (!me) return null;
 
   const scope = useMemo(() => {
-    if (role === "admin" || role === "hr") return state.nhanVien;
-    return state.nhanVien.filter((n) => n.maPB === me.maPB);
+    return visibleEmployees(state, me, role, "kpi");
   }, [state.nhanVien, role, me]);
 
   const scopedIds = new Set(scope.map((n) => n.maNV));
@@ -162,10 +163,17 @@ function TeamEvalTab() {
     return (pb === "all" || nv?.maPB === pb) && `${nv?.hoTen} ${e.maNV}`.toLowerCase().includes(q.toLowerCase().trim());
   });
 
+  const canScore = (e: Evaluation) => {
+    if (e.status !== "Chờ quản lý đánh giá" || e.maNV === me.maNV) return false;
+    const target = state.taiKhoan[e.maNV];
+    if (target === "tp") return can(role, "kpi.scoreManagers");
+    return can(role, "kpi.scoreDept") && (role === "admin" || state.nhanVien.find((n) => n.maNV === e.maNV)?.maPB === me.maPB);
+  };
   const pendingManager = teamEvals.filter((e) => e.status === "Chờ quản lý đánh giá");
   const completed = teamEvals.filter((e) => e.status === "Hoàn tất");
 
   const submitManager = (e: Evaluation, scores: (number | null)[], comments: string[]) => {
+    if (!canScore(e)) { toast.error("Bạn không có quyền chấm phiếu KPI này"); return; }
     if (!scoresComplete(scores)) { toast.error("Vui lòng chấm tất cả tiêu chí từ 0–100"); return; }
     change((d) => {
       const ev = d.evaluations.find((x) => x.id === e.id);
@@ -180,10 +188,10 @@ function TeamEvalTab() {
 
   return (
     <>
-      <PageHeader title="Đánh giá đội ngũ" desc={role === "tp" ? `Phòng ${tenPB(me.maPB)}` : "Tất cả phòng ban"} />
+      <PageHeader title="Đánh giá đội ngũ" desc={scopeOf(role, "kpi") === "dept" ? `Phòng ${tenPB(me.maPB)}` : "Tất cả phòng ban"} />
       <div className="mb-4 flex flex-wrap items-end gap-3">
         <Choice label="Kỳ" value={month} onChange={setMonth} options={data.opened.map((m) => [m, fmtMonth(m)] as [string, string])} />
-        {role !== "tp" && <Choice label="Phòng ban" value={pb} onChange={setPb} options={[["all", "Tất cả"], ...PHONG_BAN.filter((p) => p.maPB !== "BGD").map((p) => [p.maPB, p.tenPB] as [string, string])]} />}
+        {scopeOf(role, "kpi") === "all" && <Choice label="Phòng ban" value={pb} onChange={setPb} options={[["all", "Tất cả"], ...PHONG_BAN.filter((p) => p.maPB !== "BGD").map((p) => [p.maPB, p.tenPB] as [string, string])]} />}
         <div className="min-w-48 flex-1"><FormField label="Tìm nhân viên"><Input placeholder="Họ tên / Mã NV" value={q} onChange={(e) => setQ(e.target.value)} /></FormField></div>
       </div>
       <div className="mb-5 grid gap-3 sm:grid-cols-3">
@@ -213,7 +221,7 @@ function TeamEvalTab() {
                   <TableCell>{result ? <GradeBadge grade={result.grade} /> : "—"}</TableCell>
                   <TableCell>
                     <Button variant="ghost" size="sm" onClick={() => setActive(e)}>
-                      {e.status === "Chờ quản lý đánh giá" ? "Đánh giá" : "Xem"}
+                      {canScore(e) ? "Đánh giá" : "Xem"}
                     </Button>
                   </TableCell>
                 </TableRow>
@@ -225,7 +233,7 @@ function TeamEvalTab() {
       {active && (
         <EvalDialog
           evaluation={active}
-          mode={active.status === "Chờ quản lý đánh giá" ? "manager" : "view"}
+          mode={canScore(active) ? "manager" : "view"}
           onClose={() => setActive(null)}
           onSubmitSelf={() => {}}
           onSubmitManager={submitManager}

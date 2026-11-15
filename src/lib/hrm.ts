@@ -3,7 +3,7 @@ import { DEFAULT_CONFIG, type AppConfig } from '@/data/config';
 import { addDays, daysBetween, dow, isWeekend, monthOf, TODAY, workdays } from './date';
 import type { DonInput } from './rules';
 export const normalize = (s: string) => s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase();
-export const visibleEmployees = (s: AppState, me: NhanVien, role: Role, allForAccounting = false) => s.nhanVien.filter(n => role === 'admin' || role === 'hr' || (role === 'kt' && allForAccounting) || (role === 'tp' ? n.maPB === me.maPB : n.maNV === me.maNV));
+export { visibleEmployees } from './permissions';
 export const shiftFor = (s: AppState, id: string, day: string): Ca | undefined => {
   const n = s.nhanVien.find(n => n.maNV === id);
   if (!n || day < n.ngayVaoLam || (n.ngayNghiViec && day > n.ngayNghiViec)) return;
