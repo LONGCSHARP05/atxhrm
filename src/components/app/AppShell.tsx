@@ -147,7 +147,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const isLogin = path === "/dang-nhap";
   const allowed = canSee(path, role);
   useEffect(() => {
-    if (me && !isLogin && !allowed) updateData(`Truy cập trái phép ${path}`, path, () => {});
+    if (me && !isLogin && !allowed) updateData(`Truy cập trái phép ${path}`, path, () => {}, true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [me?.maNV, path, allowed]);
   useEffect(() => {

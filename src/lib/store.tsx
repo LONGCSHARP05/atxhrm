@@ -19,7 +19,7 @@ interface Store {
   search: string;
   setSearch: (q: string) => void;
   login: (maNV: string, password?: string) => boolean;
-  updateData: (action: string, target: string, fn: (d: AppState) => void) => void;
+  updateData: (action: string, target: string, fn: (d: AppState) => void, silent?: boolean) => void;
   logout: () => void;
   reset: () => void;
   themNV: (nv: Omit<NhanVien, "maNV">, hd: Pick<HopDong, "loai" | "luongCoBan">) => string;
@@ -99,7 +99,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     return {
       state, me, role: me ? roleOf(state, me.maNV) : "nv", search, setSearch,
       login: (m, password = "123456") => { if (!credentialsValid(state,m,password)) return false; const id=m.trim().toUpperCase(); localStorage.setItem(UKEY,id); setUserId(id); mutate((d,log)=>{ log(`Đăng nhập ${id}`); const last=d.activityLog[0]; if(last){last.maNV=id;last.vaiTro=roleOf(d,id);} }); return true; },
-      updateData: (action,target,fn) => mutate((d,log)=>{ fn(d); log(action); const last=d.activityLog[0]; if(last) last.doiTuong=target; }),
+      updateData: (action,target,fn,silent) => mutate((d,log)=>{ fn(d); if (silent) { const t=now().toISOString(); const actor=userId??""; d.nhatKy.unshift({id:uid("NK"),thoiGian:t,maNV:actor,hanhDong:action}); d.activityLog.unshift({thoiGian:t,maNV:actor,vaiTro:roleOf(d,actor),hanhDong:action,doiTuong:target,chiTiet:action}); return; } log(action); const last=d.activityLog[0]; if(last) last.doiTuong=target; }),
       logout: () => { mutate((d,log)=>log("Đăng xuất")); localStorage.removeItem(UKEY); setUserId(null); },
       reset: () => setState(buildSeed()),
       themNV: (nv, hd) => {
@@ -161,7 +161,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           if (!d.bangCongDaXacNhan.includes(thang)) d.bangCongDaXacNhan.push(thang);
           const label = `${thang.slice(5)}/${thang.slice(0, 4)}`;
           log(`Xác nhận bảng công kỳ ${label}`);
-          notify([...byRole(d, "kt"), ...byRole(d, "admin")], `Bảng công kỳ ${label} đã được xác nhận`, undefined, "cham-cong");
+          notify(byRole(d, "kt"), `Bảng công kỳ ${label} đã được xác nhận`, undefined, "cham-cong");
         }),
       ganCa: (maNV, ca) =>
         mutate((d, log, notify) => {
