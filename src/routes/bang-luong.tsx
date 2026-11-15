@@ -66,7 +66,11 @@ function BangLuongPage() {
       p.closedBy = me.maNV;
       p.closedAt = new Date().toISOString();
     });
-    updateData(`Chốt lương kỳ ${fmtMonth(month)}`, month, () => {});
+    const ids = period?.rows.map((r) => r.maNV) ?? [];
+    const stamp = new Date().toISOString();
+    updateData(`Chốt lương kỳ ${fmtMonth(month)}`, month, (d) => {
+      ids.forEach((maNV) => d.thongBao.unshift({ id: `TB${Date.now().toString(36)}${maNV}`, maNV, noiDung: `Phiếu lương kỳ ${fmtMonth(month)} đã được chốt`, thoiGian: stamp, daDoc: false, trang: "phieu-luong" }));
+    });
     toast.success(`Đã chốt lương kỳ ${fmtMonth(month)}`);
     setCloseOpen(false);
   };
