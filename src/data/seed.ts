@@ -197,9 +197,17 @@ export function buildSeed(): AppState {
     don(K, "Đổi ca", "2026-11-18", { caCu: "HC", caMoi: "SANG", lyDo: "Họp với đối tác Singapore buổi sáng sớm" }, "Chờ duyệt", "2026-11-10"),
     don(J, "Đi trễ/về sớm", "2026-11-13", { kieu: "Về sớm", soPhut: 60, lyDo: "Đón con ở trường" }, "Chờ duyệt", "2026-11-12"),
     don(E, "Nghỉ phép năm", "2026-11-24", { denNgay: "2026-11-25", soNgay: 2, lyDo: "Du lịch cùng gia đình" }, "Chờ duyệt", "2026-11-11"),
+    // HCNS requests
+    don(G, "Nghỉ phép năm", "2026-11-18", { denNgay: "2026-11-18", soNgay: 1, lyDo: "Đi lễ thôi nôi cháu" }, "Chờ duyệt", "2026-11-11"),
+    don(who("HCNS", "Chuyên viên C&B"), "Đi trễ/về sớm", "2026-11-10", { kieu: "Về sớm", soPhut: 45, lyDo: "Đi ngân hàng làm việc công ty" }, "Đã duyệt", "2026-11-09"),
+    don(who("HCNS", "Nhân viên Hành chính"), "Nghỉ ốm", "2026-10-15", { denNgay: "2026-10-16", soNgay: 2, lyDo: "Sốt siêu vi, có giấy khám bệnh" }, "Đã duyệt", "2026-10-14"),
+    // TCKT requests
+    don(H, "Làm thêm giờ", "2026-11-15", { soGio: 4, loaiNgayOT: "Cuối tuần", lyDo: "Đối soát ngân hàng cuối tuần" }, "Chờ duyệt", "2026-11-12"),
+    don(who("TCKT", "Chuyên viên Kiểm soát rủi ro"), "Nghỉ phép năm", "2026-11-20", { denNgay: "2026-11-20", soNgay: 1, lyDo: "Đi đám cưới bạn thân" }, "Đã duyệt", "2026-11-08"),
+    don(who("TCKT", "Kế toán viên", 1), "Đổi ca", "2026-11-13", { caCu: "HC", caMoi: "SANG", lyDo: "Họp với đối tác nước ngoài", lyDoTuChoi: "Ca sáng không phù hợp khung giờ kế toán" }, "Từ chối", "2026-11-11"),
   ];
   donTu.filter((d) => d.loai === "Nghỉ phép năm" && d.trangThai === "Đã duyệt").forEach((d) => (phepDaDung[d.maNV] += d.soNgay ?? 0));
-  const caNgoaiLe: Record<string, CaId | "OFF"> = { [`${I}|2026-11-16`]: "CHIEU" };
+  const caNgoaiLe: Record<string, CaId | "OFF"> = { [`${I}|2026-11-16`]: "CHIEU", [`${who("TCKT", "Kế toán viên", 1)}|2026-11-13`]: "SANG" };
 
   // Attendance
   const leave = new Map<string, "Nghỉ phép" | "Nghỉ ốm">();
@@ -269,6 +277,12 @@ export function buildSeed(): AppState {
     notif(demoNV, "Đơn Nghỉ phép năm ngày 20/11/2026 của bạn đã được gửi, đang chờ duyệt", 7),
     notif(demoNV, "Bảng công kỳ 10/2026 đã được xác nhận", 2870, true),
     notif(tpOf("KDMKT"), `Có đơn mới chờ duyệt: Nghỉ phép năm của ${name(E)}`, 1410),
+    notif(tpOf("HCNS"), `Có đơn mới chờ duyệt: Nghỉ phép năm của ${name(G)}`, 8),
+    notif(tpOf("TCKT"), `Có đơn mới chờ duyệt: Làm thêm giờ của ${name(H)}`, 3),
+    notif(demo("hr"), "2 nhân viên phòng Kinh doanh & Marketing đã nghỉ việc", 2880, true),
+    notif(bgd, "2 nhân viên phòng Kinh doanh & Marketing đã nghỉ việc", 2870, true),
+    notif(demo("kt"), "Kỳ lương 10/2026 đã chốt — sẵn sàng in phiếu lương", 2500),
+    notif(tpOf("CNSP"), `Đơn Nghỉ ốm của ${name(tpCN)} đã được duyệt`, 1440, true),
   ];
   let nk = 0;
   const log = (maNV: string, hanhDong: string, min: number): NhatKy => ({ id: `NK${++nk}`, maNV, hanhDong, thoiGian: t(min) });
@@ -281,6 +295,11 @@ export function buildSeed(): AppState {
     log(hrDemo, "Xác nhận bảng công kỳ 10/2026", 2880),
     log(tpOf("KDMKT"), `Duyệt đơn Đổi ca của ${name(I)}`, 4300),
     log(hrDemo, "Thêm 2 nhân viên mới phòng Kinh doanh & Marketing", 25000),
+    log(tpOf("HCNS"), `Duyệt đơn Đi trễ/về sớm của ${name(who("HCNS", "Chuyên viên C&B"))}`, 1200),
+    log(tpOf("TCKT"), `Duyệt đơn Nghỉ phép năm của ${name(who("TCKT", "Chuyên viên Kiểm soát rủi ro"))}`, 2200),
+    log(tpOf("TCKT"), `Từ chối đơn Đổi ca của ${name(who("TCKT", "Kế toán viên", 1))}`, 400),
+    log(demo("kt"), "Chốt lương kỳ 10/2026", 2500),
+    log(hrDemo, "Cập nhật hợp đồng lao động cho 3 nhân viên sắp hết hạn", 3000),
   ];
   // Extend existing rows without replacing identities or existing requests.
   for (const request of donTu) request.id = "ĐT" + request.id.slice(2).padStart(4, "0");
