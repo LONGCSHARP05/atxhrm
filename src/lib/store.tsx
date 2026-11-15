@@ -70,7 +70,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, [state]);
 
   const mutate = useCallback(
-    (fn: (d: AppState, log: (a: string) => void, notify: (to: string | string[], t: string, donId?: string, trang?: "cham-cong" | "phieu-luong" | "kpi" | "ho-so") => void) => void) =>
+    (fn: (d: AppState, log: (a: string) => void, notify: (to: string | string[], t: string, donId?: string, trang?: "cham-cong" | "phieu-luong" | "kpi" | "ho-so") => void) => void) => {
+      const toasts: string[] = [];
       setState((prev) => {
         if (!prev) return prev;
         const d: AppState = structuredClone(prev);
@@ -78,12 +79,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const actor = localStorage.getItem(UKEY) ?? "";
         fn(
           d,
-          (hanhDong) => { d.nhatKy.unshift({ id: uid("NK"), thoiGian: t, maNV: actor, hanhDong }); d.activityLog.unshift({ thoiGian:t, maNV:actor, vaiTro:roleOf(d,actor), hanhDong, doiTuong:actor, chiTiet:hanhDong }); queueMicrotask(()=>toast.success(hanhDong)); },
+          (hanhDong) => { d.nhatKy.unshift({ id: uid("NK"), thoiGian: t, maNV: actor, hanhDong }); d.activityLog.unshift({ thoiGian:t, maNV:actor, vaiTro:roleOf(d,actor), hanhDong, doiTuong:actor, chiTiet:hanhDong }); toasts.push(hanhDong); },
           (to, noiDung, donId, trang) =>
             [to].flat().filter((m) => m && m !== actor).forEach((maNV) => d.thongBao.unshift({ id: uid("TB"), maNV, noiDung, thoiGian: t, daDoc: false, donId, trang })),
         );
         return d;
-      }),
+      });
+      if (toasts.length) queueMicrotask(() => { for (const msg of toasts) toast.success(msg); });
+    },
     [],
   );
 
