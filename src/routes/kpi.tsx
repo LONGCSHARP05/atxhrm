@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useMemo } from "react";
-import { Target, CheckCircle, Clock, Star, Pencil, Eye } from "lucide-react";
+import { Target, CheckCircle, Clock, Star, Pencil } from "lucide-react";
 import { toast } from "sonner";
 import { PageHeader, StatCard, StatusBadge, thCls } from "@/components/app/ui-bits";
 import { Choice, FormField } from "@/components/app/hr-controls";
@@ -16,7 +16,7 @@ import { useCompensation } from "@/lib/compensation-store";
 import { useStore } from "@/lib/store";
 import { fmtMonth, TODAY } from "@/lib/date";
 import { seo } from "@/lib/nav";
-import { eligibleKpi, kpiResult, scoresComplete, criteriaValid, type Criterion, type Evaluation } from "@/lib/compensation";
+import { kpiResult, scoresComplete, criteriaValid, type Criterion, type Evaluation } from "@/lib/compensation";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/kpi")({
@@ -54,7 +54,6 @@ function SelfEvalTab() {
   if (!me) return null;
 
   const myEvals = data.evaluations.filter((e) => e.maNV === me.maNV);
-  const current = myEvals.find((e) => e.month === month);
 
   const canSelfScore = (e: Evaluation) => e.status === "Chờ tự đánh giá";
   const canManagerScore = (e: Evaluation) => e.status === "Chờ quản lý đánh giá";
@@ -239,7 +238,6 @@ function TeamEvalTab() {
 /* ───────── Criteria Management ───────── */
 
 function CriteriaTab() {
-  const { state } = useStore();
   const { data, change } = useCompensation();
   const [pb, setPb] = useState(PHONG_BAN.find((p) => p.maPB !== "BGD")?.maPB ?? "HCNS");
   const [edit, setEdit] = useState<Criterion[] | null>(null);

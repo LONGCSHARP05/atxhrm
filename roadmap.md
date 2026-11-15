@@ -1,11 +1,11 @@
 # ATXhrm continuation
-- [ ] Shared configuration, demo credentials, silent reset, Vietnamese 404, status colors, activity logging.
-- [ ] Attendance totals, clock simulation, daily detail, HR corrections and period confirmation.
-- [ ] Weekly/monthly schedules, bulk assignments, shift management and locked periods.
-- [ ] Role-based requests, validated forms, approval/rejection and downstream attendance updates.
-- [ ] Per-user notifications, request deep links and permission-scoped employee search.
+- [x] Shared configuration, demo credentials, silent reset, Vietnamese 404, status colors, activity logging.
+- [x] Attendance totals, clock simulation, daily detail, HR corrections and period confirmation.
+- [x] Weekly/monthly schedules, bulk assignments, shift management and locked periods.
+- [x] Role-based requests, validated forms, approval/rejection and downstream attendance updates.
+- [x] Per-user notifications, request deep links and permission-scoped employee search.
 - [ ] Rule tests and desktop/mobile end-to-end checks.
-- [ ] Replace board role with Admin; implement account management, configuration and activity log.
-- [ ] Complete KPI evaluations and department criteria.
-- [ ] Complete payroll calculations, closing and printable payslips.
-- [ ] Complete four shared-data reports and printing.
+- [x] Replace board role with Admin; implement account management, configuration and activity log.
+- [x] Complete KPI evaluations and department criteria.
+- [x] Complete payroll calculations, closing and printable payslips.
+- [x] Complete four shared-data reports and printing.

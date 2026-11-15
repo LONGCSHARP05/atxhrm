@@ -15,9 +15,8 @@ import { useCompensation } from "@/lib/compensation-store";
 import { useStore } from "@/lib/store";
 import { fmtMoney, fmtMonth } from "@/lib/date";
 import { seo } from "@/lib/nav";
-import { calculatePayroll, type PayrollRow, type PayrollPeriod } from "@/lib/compensation";
+import { calculatePayroll, type PayrollRow } from "@/lib/compensation";
 import { PayrollDetail } from "@/components/app/payroll-detail";
-import { PrintHeader } from "@/components/app/print-header";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/bang-luong")({
