@@ -18,6 +18,7 @@ import { fmtDate, fmtMoney, TODAY } from "@/lib/date";
 import { seo } from "@/lib/nav";
 import { phepConLai } from "@/lib/rules";
 import { useStore } from "@/lib/store";
+import { can, visibleEmployees } from "@/lib/permissions";
 
 export const Route = createFileRoute("/ho-so")({
   validateSearch: (search: Record<string, unknown>): {nv?: string} => ({nv:typeof search["nv"]==="string"?search["nv"]:undefined}),
@@ -38,11 +39,9 @@ function HoSoPage() {
   const { nghiViec } = useStore();
 
   const scope = useMemo(() => {
-    if ((role === "hr" || role === "admin")) return state.nhanVien;
-    if (role === "tp") return state.nhanVien.filter((n) => n.maPB === me!.maPB);
-    return state.nhanVien.filter((n) => n.maNV === me!.maNV);
+    return me ? visibleEmployees(state, me, role, "hoSo") : [];
   }, [state.nhanVien, role, me]);
-  useEffect(()=>{if(nv && scope.some(n=>n.maNV===nv))setDetail(nv);},[nv,scope]);
+  useEffect(()=>{if(!nv)return;if(scope.some(n=>n.maNV===nv))setDetail(nv);else toast.error("Bạn không có quyền xem mục này");},[nv,scope]);
   const q = unaccent(search);
   const rows = scope.filter((n) =>
     (pb === "all" || n.maPB === pb) && (tt === "all" || n.trangThai === tt) &&
@@ -63,7 +62,7 @@ function HoSoPage() {
       <PageHeader
         title="Hồ sơ nhân sự"
         desc={role === "tp" ? `Nhân sự phòng ${tenPB(me!.maPB)}` : `${state.nhanVien.length} hồ sơ · ${state.nhanVien.filter((n) => n.trangThai !== "Đã nghỉ việc").length} đang làm`}
-        actions={(role === "hr" || role === "admin") && <Button onClick={() => setEdit("new")}><Plus className="h-4 w-4" />Thêm nhân viên</Button>}
+        actions={can(role, "hoSo.edit") && <Button onClick={() => setEdit("new")}><Plus className="h-4 w-4" />Thêm nhân viên</Button>}
       />
       <div className="card-surface">
         <div className="flex flex-wrap gap-3 border-b p-4">
@@ -71,7 +70,7 @@ function HoSoPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Tìm theo tên, mã NV, email, chức danh…" className="pl-9" />
           </div>
-          {(role === "hr" || role === "admin") && (
+          {can(role, "hoSo.edit") && (
             <Select value={pb} onValueChange={setPb}>
               <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -109,7 +108,7 @@ function HoSoPage() {
                 <TableCell>{fmtDate(n.ngayVaoLam)}</TableCell>
                 <TableCell><StatusBadge value={n.trangThai} /></TableCell>
                 <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                  {(role === "hr" || role === "admin") && (
+                  {can(role, "hoSo.edit") && (
                     <div className="flex justify-end gap-1">
                       <Button size="icon" variant="ghost" aria-label="Sửa" onClick={() => setEdit(n)}><Pencil className="h-4 w-4" /></Button>
                       {n.trangThai !== "Đã nghỉ việc" && <Button size="icon" variant="ghost" aria-label="Xóa" onClick={() => setDel(n)}><UserX className="h-4 w-4 text-destructive" /></Button>}
@@ -149,9 +148,10 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 }
 
 function Detail({ maNV }: { maNV: string }) {
-  const { state } = useStore();
+  const { state, me, role } = useStore();
   const { config } = useConfig();
   const n = state.nhanVien.find((x) => x.maNV === maNV)!;
+  const sensitive = can(role, "hoSo.viewSensitive") || me?.maNV === maNV;
   const hd = state.hopDong.find((h) => h.maNV === maNV);
   const used = state.phepDaDung[maNV] ?? 0;
   const leaves = state.donTu.filter((d) => d.maNV === maNV && d.loai === "Nghỉ phép năm");
@@ -166,15 +166,15 @@ function Detail({ maNV }: { maNV: string }) {
         <div className="ml-auto"><StatusBadge value={n.trangThai} /></div>
       </div>
       <Tabs defaultValue="info">
-        <TabsList><TabsTrigger value="info">Thông tin</TabsTrigger><TabsTrigger value="hd">Hợp đồng</TabsTrigger><TabsTrigger value="phep">Phép năm</TabsTrigger></TabsList>
+        <TabsList><TabsTrigger value="info">Thông tin</TabsTrigger>{sensitive && <TabsTrigger value="hd">Hợp đồng</TabsTrigger>}<TabsTrigger value="phep">Phép năm</TabsTrigger></TabsList>
         <TabsContent value="info" className="grid grid-cols-2 gap-4 pt-4 md:grid-cols-3">
           <Field label="Ngày sinh" value={fmtDate(n.ngaySinh)} /><Field label="Giới tính" value={n.gioiTinh} /><Field label="Trình độ" value={n.trinhDo} />
           <Field label="Email" value={n.email} /><Field label="Số điện thoại" value={n.sdt} /><Field label="Ngày vào làm" value={fmtDate(n.ngayVaoLam)} />
-          <Field label="Địa chỉ" value={n.diaChi} /><Field label="Tài khoản ngân hàng" value={`${n.soTaiKhoanNH} · ${n.tenNganHang}`} /><Field label="Người phụ thuộc" value={String(n.soNguoiPhuThuoc)} />
+          <Field label="Địa chỉ" value={n.diaChi} />{sensitive && <Field label="Tài khoản ngân hàng" value={`${n.soTaiKhoanNH} · ${n.tenNganHang}`} />}<Field label="Người phụ thuộc" value={String(n.soNguoiPhuThuoc)} />
           {n.ngayNghiViec && <Field label="Ngày nghỉ việc" value={fmtDate(n.ngayNghiViec)} />}
         </TabsContent>
         <TabsContent value="hd" className="pt-4">
-          {hd ? (
+          {!sensitive ? null : hd ? (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
               <Field label="Số hợp đồng" value={hd.maHD} /><Field label="Loại hợp đồng" value={hd.loai} /><Field label="Thời hạn" value={`${fmtDate(hd.ngayBatDau)} → ${hd.ngayKetThuc ? fmtDate(hd.ngayKetThuc) : "Không thời hạn"}`} />
               <Field label="Lương cơ bản" value={fmtMoney(hd.luongCoBan)} /><Field label="Phụ cấp ăn trưa" value={fmtMoney(hd.phuCapAnTrua)} /><Field label="Phụ cấp chức danh" value={fmtMoney(hd.phuCapChucDanh)} />
